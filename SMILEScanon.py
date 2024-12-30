@@ -35,8 +35,10 @@ def canonisation(inch_smiles):
         if mol is None:
             inch_smiles[inch] = "SMILES invalide"
         else:
-            tmp_smiles = Chem.MolToSmiles(mol)
+            tmp_smiles = Chem.MolToSmiles(mol, canonical=True)
             if tmp_smiles != smiles:
+                #print(f"SMILES canonique : {tmp_smiles}")
+                #print(f"SMILES du fichier : {smiles}")
                 compt_diff_smiles += 1
             inch_smiles[inch] = tmp_smiles
     return compt_diff_smiles

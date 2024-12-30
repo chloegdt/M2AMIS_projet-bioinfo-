@@ -3,14 +3,20 @@ import os
 import shutil
 from pyteomics import mgf
 
-filename = "Cluster.mgf"
-newdir = "molecules_parsees"
+filename = "ALL_GNPS_cleaned.mgf"
+newdir = "cluster_molecules"
+
+if filename == "Cluster.mgf" or filename == "mol.mgf": precursorname = "precursortype"
+else: precursorname = "adduct"
 
 def extract_collision_energy(params):
     """
     Extracts the collision energy from the compound name if it exists.
     """
-
+    if params.get("collision_energy") != None:
+        if params["collision_energy"] != "":
+            return params["collision_energy"]
+    
     compound_name = params.get('compound_name').lower()
     match = re.search(r'collisionenergy[:\s]*([\d]+)', compound_name, re.IGNORECASE)
     if match: return match.group(1)
@@ -53,21 +59,26 @@ def parse_mgf(filename, newdir):
     if not os.path.exists(newdir):
         os.mkdir(newdir)
 
-    clear_directory(newdir)
+    #clear_directory(newdir)
 
     with mgf.MGF(filename) as spectres:
         for spectre in spectres:
             params = spectre['params']
             collision_energy = extract_collision_energy(params)
-            precursortype = params.get('precursortype')
-
-
-            if (collision_energy is not None):
+            precursortype = params.get(precursorname)
+            smiles = params.get('smiles')
+    
+            if (collision_energy is not None) and (precursortype != "") and smiles != "":
                 params['collision_energy'] = collision_energy
                 params['compound_name'] = re.sub(r'collisionenergy[:\s]*([\d]+)', '', params['compound_name'], flags=re.IGNORECASE).strip()
                 newfilename = "energy_" + collision_energy + "_precursor_" + str(precursortype) + ".mgf"
-            else:
+            elif (collision_energy is None and smiles != ""):
                 newfilename = "no_energy.mgf"
+            elif (smiles == "" and collision_energy is not None):
+                newfilename = "no_smiles.mgf"
+            else:
+                # (no energy and no smiles) or no precursor 
+                newfilename = "inexploitable.mgf"
             
             newpath = newdir + os.sep + newfilename
 

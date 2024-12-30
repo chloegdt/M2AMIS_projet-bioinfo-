@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from pyteomics import mgf
 import numpy as np
 
-filename = "molecules_parsees/energy_102040_precursor_2M+H.mgf"
+filename = "molecules_parsees/energy_102040_precursor_M-e.mgf"
 
 # Je cherche le nombre de spectre dans le fichier
 with mgf.MGF(filename) as spectres:
@@ -10,7 +10,7 @@ with mgf.MGF(filename) as spectres:
     num_spectre = len(spectre_list)
 
 # Je fait une carte des couleurs basés sur le nombre de spectre
-colormap = plt.colormaps.get_cmap('gnuplot2').resampled(num_spectre)
+colormap = plt.colormaps.get_cmap('gist_rainbow').resampled(num_spectre)
 
 plt.figure(figsize=(10, 6))
 

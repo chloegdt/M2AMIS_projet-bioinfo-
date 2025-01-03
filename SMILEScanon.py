@@ -2,7 +2,12 @@ from rdkit import Chem
 import os
 
 dirname = "molecules_parsees"
-filename = "no_energy.mgf"
+filename = ["no_energy.mgf", "no_smiles.mgf"]
+
+#attention y a pas tout le temps l'inchikey (avec pyteomics si ce champs n'existe pas
+#donne cette valeur "inchikey inconnu i")
+#rajouter no smiles et no validated dans filename
+#utiliser withopen
 
 #la je crée juste un dictionnaire avec les SMILES canonisés associé à leur INCHKEY, mais
 #mais peut-être qu'il faudra écrire le nouveau SMILE dans les fichiers .mgf
@@ -10,10 +15,12 @@ filename = "no_energy.mgf"
 
 def parse_into_dictionnary(dirname, filename):
     inch_smiles = {}
+    
     for f in os.listdir(dirname):
-        if f != filename:
+        if f not in filenames :
             path = dirname + "/" + f
-            content = open(path, "r").readlines()
+            with open(path, 'r') as file :
+                content = file.readlines()
             inch = None
             smiles = None
             #ce serait plus joli avec un regexp mais je suis vraiment un caca en python

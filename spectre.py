@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from pyteomics import mgf
 import numpy as np
+import re
 
 filename = "molecules_parsees/energy_102040_precursor_M-e.mgf"
 
@@ -18,7 +19,10 @@ plt.figure(figsize=(10, 6))
 for id, spectre in enumerate(spectre_list):
     color = colormap(id)
     formula = spectre['params'].get('formula')
-    col_energy = spectre['params'].get('collision_energy')
+    if formula == None or len(formula) <= 1:
+        formula = "Unknown"
+        print("HERE")
+    
 
     mz = spectre['m/z array']
     intensity = spectre['intensity array']
@@ -26,6 +30,9 @@ for id, spectre in enumerate(spectre_list):
     normalized_array = (intensity - intensity.min()) / (intensity.max() - intensity.min())
 
     plt.vlines(mz, ymin=0, ymax=normalized_array, color=color, linewidth=1, label=formula)
+
+
+col_energy = re.findall(r'\d+', filename)[0]  # Get the first number
 
 # Je fais le matplot pour afficher le résultat
 plt.legend(title="Spectra", bbox_to_anchor=(1.05, 1), loc='upper left')

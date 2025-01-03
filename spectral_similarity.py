@@ -9,9 +9,6 @@ from matchms.similarity import CosineGreedy
 def metadata_processing(spectrum):
     spectrum = ms_filters.default_filters(spectrum)
     spectrum = ms_filters.repair_inchi_inchikey_smiles(spectrum)
-    spectrum = ms_filters.derive_inchi_from_smiles(spectrum)
-    spectrum = ms_filters.derive_smiles_from_inchi(spectrum)
-    spectrum = ms_filters.derive_inchikey_from_inchi(spectrum)
     spectrum = ms_filters.harmonize_undefined_smiles(spectrum)
     spectrum = ms_filters.harmonize_undefined_inchi(spectrum)
     spectrum = ms_filters.harmonize_undefined_inchikey(spectrum)
@@ -26,7 +23,24 @@ def peak_processing(spectrum):
     return spectrum
 
 
-path_data = "molecules_parsees/energy_102040_precursor_M-e.mgf"  # enter path to downloaded mgf file
+def print_scores() :
+    for (reference, query, score) in scores:
+        if score[0] >= 0.5 :  
+            print(f"Cosine score" + f" is {score[0]:.2f} with {score[1]} matched peaks")
+
+    '''
+    # Je range les scores
+    scores_array = scores.scores.to_array()
+    scores_array[:5, :5]["CosineGreedy_score"]
+    #scores_array[:5, :5]["CosineGreedy_matches"]
+
+    #J'affiche le résultat. Les pics et les Smiles des molécules qui ont une valeur de Cosinus proche ou identique
+    best_matches = scores.scores_by_query(spectrums[5], name="CosineGreedy_score", sort=True)
+    print([x[1] for x in best_matches])
+    print([x[0].get("smiles") for x in best_matches])
+    '''
+
+path_data = "molecules_parsees/energy_102040_precursor_M+H.mgf"  # enter path to downloaded mgf file
 file_mgf = os.path.join(path_data)
 spectrums = list(load_from_mgf(file_mgf))
 
@@ -60,15 +74,9 @@ plt.tight_layout()
 
 # Je calcule la similarité des spectres avec la formule du cosinus
 similarity_measure = CosineGreedy(tolerance=0.005)
-scores = calculate_scores(spectrums, spectrums, similarity_measure, is_symmetric=True)
+#scores = calculate_scores(spectrums, spectrums, similarity_measure, is_symmetric=True)
 #print(scores.score_names)
 
-# Je range les scores
-scores_array = scores.scores.to_array()
-scores_array[:5, :5]["CosineGreedy_score"]
-#scores_array[:5, :5]["CosineGreedy_matches"]
+scores = calculate_scores(spectrums, spectrums, CosineGreedy())
 
-#J'affiche le résultat. Les pics et les Smiles des molécules qui ont une valeur de Cosinus proche ou identique
-best_matches = scores.scores_by_query(spectrums[5], name="CosineGreedy_score", sort=True)
-print([x[1] for x in best_matches])
-print([x[0].get("smiles") for x in best_matches])
+print_scores()

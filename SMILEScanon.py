@@ -4,9 +4,9 @@ import os
 
 dirname = "cluster_molecules"
 filenames = ["no_energy.mgf", "no_smiles.mgf", "inexploitable.mgf"]
-# test = "energy_0.0_precursor_[M-H]1-.mgf"
 
 # Créer un dictionnaire avec les SMILES canonisés associés à leur INCHKEY
+# Est-ce qu'on doit stocker quelque part le fichier associé ?
 def parse_into_dictionnary(dirname, filenames):
     """
     Extrait un dictionnaire associant chaque InChIKey à son SMILES à partir d'un fichier MGF.
@@ -19,7 +19,7 @@ def parse_into_dictionnary(dirname, filenames):
     Returns:
     - inch_smiles: un dictionnaire où les clés sont les InChIKeys et les valeurs les SMILES.
     """
-    inchi_counter = 1  # Compteur pour les InChIKeys manquants
+    # inchi_counter = 1  # Compteur pour les InChIKeys manquants
     inch_smiles = {}
     
     for f in os.listdir(dirname):
@@ -33,9 +33,12 @@ def parse_into_dictionnary(dirname, filenames):
                     smiles = params.get('smiles')
 
                     # Si l'InChIKey est manquant, attribuer un InChIKey inconnu X
+                    # Alors les molécules identiques sont séparé par leur energie de collision + precurseur
                     if inch is None:
-                        inch = f"InChIKey inconnu {inchi_counter}"
-                        inchi_counter += 1
+                        inch = f"InChIKey inconnu {params.get('compound_name')}"
+                        # inch = f"InChIKey inconnu {inchi_counter}"
+                        # inch += f"+ fichier : {f}" #Pour retrouver dans quel fichier est une molécule
+                        # inchi_counter += 1
 
                     inch_smiles[inch] = smiles
         
@@ -60,6 +63,7 @@ def canonisation(inch_smiles):
         if mol is None:
             inch_smiles[inch] = "SMILES invalide"
             print(smiles)
+            print(inch)
         else:
             tmp_smiles = Chem.MolToSmiles(mol, canonical=True)
             if tmp_smiles != smiles:
@@ -94,13 +98,11 @@ def verif_with_inchkey(inch_smiles):
                         compt_diff_inchkeys += 1
     return compt_smiles_invalides, compt_diff_inchkeys
 
-# Main code
 inch_smiles = parse_into_dictionnary(dirname, filenames)
 inch_smiles, compt_diff_smiles = canonisation(inch_smiles)
 compt_smiles_invalides, compt_diff_inchkeys = verif_with_inchkey(inch_smiles)
-
-# Affichage des résultats
 print(f"Nombre de SMILES différents : {compt_diff_smiles}")
 print(f"Nombre de SMILES invalides : {compt_smiles_invalides}")
 print(f"Nombre d'InChIKeys différents : {compt_diff_inchkeys}")
-print(inch_smiles)
+with open('output.txt', 'w') as f:
+    print(inch_smiles, file=f)

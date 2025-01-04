@@ -32,6 +32,7 @@ def write_in_file(spectre, file, params):
 
     for key, value in params.items():
         if isinstance(value, (tuple, list)):  # Cas de PEPMASS
+            value = [str(v) for v in value if v is not None] # la charge est None, créant un erreur si écrite telle dans le fichier
             value = ' '.join(map(str, value))
         file.write(f"{key.upper()}={value}\n")
 
@@ -59,7 +60,7 @@ def parse_mgf(filename, newdir):
     if not os.path.exists(newdir):
         os.mkdir(newdir)
 
-    #clear_directory(newdir)
+    clear_directory(newdir)
 
     with mgf.MGF(filename) as spectres:
         for spectre in spectres:

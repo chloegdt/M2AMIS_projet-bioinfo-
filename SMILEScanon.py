@@ -1,71 +1,106 @@
+from pyteomics import mgf
 from rdkit import Chem
 import os
 
-dirname = "molecules_parsees"
-filename = ["no_energy.mgf", "no_smiles.mgf"]
+dirname = "cluster_molecules"
+filenames = ["no_energy.mgf", "no_smiles.mgf", "inexploitable.mgf"]
+# test = "energy_0.0_precursor_[M-H]1-.mgf"
 
-#attention y a pas tout le temps l'inchikey (avec pyteomics si ce champs n'existe pas
-#donne cette valeur "inchikey inconnu i")
-#rajouter no smiles et no validated dans filename
-#utiliser withopen
-
-#la je crée juste un dictionnaire avec les SMILES canonisés associé à leur INCHKEY, mais
-#mais peut-être qu'il faudra écrire le nouveau SMILE dans les fichiers .mgf
-#et aussi le code est brouillon parce que je galère trop à apprendre python :/
-
-def parse_into_dictionnary(dirname, filename):
+# Créer un dictionnaire avec les SMILES canonisés associés à leur INCHKEY
+def parse_into_dictionnary(dirname, filenames):
+    """
+    Extrait un dictionnaire associant chaque InChIKey à son SMILES à partir d'un fichier MGF.
+    Si l'InChIKey est manquant, il est nommé 'InChIKey inconnu X'.
+    
+    Args:
+    - dirname (str): chemin du dossier contenant les molécules parsées
+    - filenames (list): fichiers n'ayant pas de SMILES, ou pas d'énergie de collision
+    
+    Returns:
+    - inch_smiles: un dictionnaire où les clés sont les InChIKeys et les valeurs les SMILES.
+    """
+    inchi_counter = 1  # Compteur pour les InChIKeys manquants
     inch_smiles = {}
     
     for f in os.listdir(dirname):
-        if f not in filenames :
-            path = dirname + "/" + f
-            with open(path, 'r') as file :
-                content = file.readlines()
-            inch = None
-            smiles = None
-            #ce serait plus joli avec un regexp mais je suis vraiment un caca en python
-            for l in content:
-                #on ne verifie pas que les champs ne sont pas vides, pt il faut mettre des and
-                if l[0:8] == "INCHIKEY":
-                    inch = l[9:].replace("\n", "")
-                elif l[0:6] == "SMILES":
-                    smiles = l[7:].replace("\n","")
+        if f not in filenames:
+            #path = os.path.join(dirname, test)
+            path = os.path.join(dirname, f)
+            with mgf.MGF(path) as spectres:
+                for spectre in spectres:
+                    params = spectre['params']
+                    inch = params.get('inchikey')
+                    smiles = params.get('smiles')
+
+                    # Si l'InChIKey est manquant, attribuer un InChIKey inconnu X
+                    if inch is None:
+                        inch = f"InChIKey inconnu {inchi_counter}"
+                        inchi_counter += 1
+
                     inch_smiles[inch] = smiles
         
     return inch_smiles
 
+# Canoniser les SMILES
 def canonisation(inch_smiles):
+    """
+    Canonise chaque SMILES de molécule et met à jour le dictionnaire avec les SMILES canonisés
+    
+    Args:
+    - inch_smiles: un dictionnaire dont les SMILES ne sont pas canonisés
+    
+    Returns:
+    - inch_smiles: un dictionnaire où les clés sont les InChIKeys et les valeurs les SMILES canonisés.
+    - compt_diff_smiles: un compteur des SMILES qui n'étaient pas canonisés
+    """
     compt_diff_smiles = 0
     for inch, smiles in inch_smiles.items():
         mol = Chem.MolFromSmiles(smiles)
 
         if mol is None:
             inch_smiles[inch] = "SMILES invalide"
+            print(smiles)
         else:
             tmp_smiles = Chem.MolToSmiles(mol, canonical=True)
             if tmp_smiles != smiles:
-                #print(f"SMILES canonique : {tmp_smiles}")
-                #print(f"SMILES du fichier : {smiles}")
                 compt_diff_smiles += 1
             inch_smiles[inch] = tmp_smiles
-    return compt_diff_smiles
 
+    return inch_smiles, compt_diff_smiles
+
+# Vérifier la cohérence des SMILES avec les InChIKeys
 def verif_with_inchkey(inch_smiles):
+    """
+    Effectue des statistiques pour vérifier la cohérence des SMILES canonisés avec les InChIKeys.
+    
+    Args:
+    - inch_smiles: un dictionnaire de SMILES canonisés
+    
+    Returns:
+    - compt_smiles_invalides: compte les SMILES invalides
+    - compt_diff_inchkeys: compte les InChIKeys qui ne correspondent pas au SMILES
+    """
     compt_smiles_invalides = 0
-    compt_diff_inch = 0
+    compt_diff_inchkeys = 0
     for inch, smiles in inch_smiles.items():
         if smiles == "SMILES invalide":
             compt_smiles_invalides += 1
         else:
             mol = Chem.MolFromSmiles(smiles)
-            inch_from_smile = Chem.inchi.MolToInchiKey(mol)
-            if inch_from_smile != inch:
-                compt_diff_inch += 1
-    return compt_smiles_invalides, compt_diff_inch
+            if mol:
+                if not inch.startswith("InChIKey inconnu"):
+                    inch_from_smile = Chem.MolToInchiKey(mol)
+                    if inch_from_smile != inch:
+                        compt_diff_inchkeys += 1
+    return compt_smiles_invalides, compt_diff_inchkeys
 
-inch_smiles = parse_into_dictionnary(dirname, filename)
-compt_diff_smiles = canonisation(inch_smiles)
-compt_smiles_invalides, compt_diff_inch = verif_with_inchkey(inch_smiles)
-print(f"nombre de smiles différents : {compt_diff_smiles}")
-print(f"nombre de smiles invalides : {compt_smiles_invalides}")
-print(f"nombre d'Inchikey différentes : {compt_diff_inch}")
+# Main code
+inch_smiles = parse_into_dictionnary(dirname, filenames)
+inch_smiles, compt_diff_smiles = canonisation(inch_smiles)
+compt_smiles_invalides, compt_diff_inchkeys = verif_with_inchkey(inch_smiles)
+
+# Affichage des résultats
+print(f"Nombre de SMILES différents : {compt_diff_smiles}")
+print(f"Nombre de SMILES invalides : {compt_smiles_invalides}")
+print(f"Nombre d'InChIKeys différents : {compt_diff_inchkeys}")
+print(inch_smiles)

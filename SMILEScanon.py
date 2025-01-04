@@ -2,8 +2,8 @@ from pyteomics import mgf
 from rdkit import Chem
 import os
 
-dirname = "cluster_molecules"
-filenames = ["no_energy.mgf", "no_smiles.mgf", "inexploitable.mgf"]
+dirname = "cluster_molecules4"
+filenames = ["no_energy.mgf", "no_smiles.mgf", "inexploitable.mgf", "not_validated.mgf"]
 
 # Créer un dictionnaire avec les SMILES canonisés associés à leur INCHKEY
 # Est-ce qu'on doit stocker quelque part le fichier associé ?
@@ -105,4 +105,5 @@ print(f"Nombre de SMILES différents : {compt_diff_smiles}")
 print(f"Nombre de SMILES invalides : {compt_smiles_invalides}")
 print(f"Nombre d'InChIKeys différents : {compt_diff_inchkeys}")
 with open('output.txt', 'w') as f:
-    print(inch_smiles, file=f)
+    for inch, smiles in inch_smiles.items():
+        f.write(f"{inch}: {smiles}\n")

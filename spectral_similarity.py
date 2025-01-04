@@ -73,10 +73,8 @@ def save_to_csv(scores) :
                     "query": query.metadata.get("formula", "unknown"),
                     "score": score})
 
-    # Convert the extracted data into a pandas DataFrame
     df_scores = pd.DataFrame(data)
 
-    # Save the DataFrame to a CSV file
     output_csv_path = "similarity_scores.csv"
     df_scores.to_csv(output_csv_path, index=False)
 

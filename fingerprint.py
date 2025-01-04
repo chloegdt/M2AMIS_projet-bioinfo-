@@ -37,8 +37,8 @@ def getRDkitFingerprints(filename):
 
 def fingerprintsSimilarity(fingerprints):
     """
-    Calcule la similarité de Tanimoto entre chaque fingerprints
-    Tanimoto(A, B) = (A et B) / (A ou B)
+        Calcule la similarité de Tanimoto entre chaque fingerprints
+        Tanimoto(A, B) = (A et B) / (A ou B)
     """
     n_fp = len(fingerprints)
     similarity_matrix = np.zeros((n_fp, n_fp))
@@ -54,6 +54,19 @@ def fingerprintsSimilarity(fingerprints):
     return similarity_matrix
 
 
+def matrixToCSV(matrix, name):
+    """
+        Prend une liste de liste (matrice) en entrée et la sauvegarde au format csv dans le fichier data/nom.csv
+    """
+    folder = "data/"
+    os.makedirs(folder, exist_ok=True)
+    file = folder + name + '.csv'
+
+    array = np.array(matrix)
+    np.savetxt(file, array, fmt='%.6f', delimiter=',')
+    return file
+
+
 
 if __name__ == '__main__':
     # molecules, fg = getMorganFingerprints(FILENAME)
@@ -61,4 +74,5 @@ if __name__ == '__main__':
     fg_sim = fingerprintsSimilarity(fg)
 
     print(fg_sim)
+    matrixToCSV(fg_sim, "Similarity-Matrix")
     # print(sorted(fg_sim[-1],reverse=False))

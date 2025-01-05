@@ -115,7 +115,7 @@ def parse_mgf(filename, newdir):
 filename = "Cluster.mgf"
 #filename = "ALL_GNPS_cleaned.mgf"
 newdir = "cluster_molecules4"
-fields_to_remove = ["charge", "ontology", "ionmode", "instrumenttype", "instrument", "manufacturer", "ms_mass_analyzer", "ms_ionisation", "ms_dissociation_method", "scans"]
+fields_to_remove = ["charge", "ontology", "ion_mode", "instrumenttype", "instrument", "ms_manufacturer", "ms_mass_analyzer", "ms_ionisation", "ms_dissociation_method", "scans"]
 # the precursor fields in cluster.mgf and all_gnps do not have the same name
 if filename == "Cluster.mgf" or filename == "mol.mgf": precursorname = "precursortype"
 else: precursorname = "adduct"

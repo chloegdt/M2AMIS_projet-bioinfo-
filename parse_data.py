@@ -75,7 +75,7 @@ def parse_mgf(filename, newdir):
     if not os.path.exists(newdir):
         os.mkdir(newdir)
 
-    #clear_directory(newdir)
+    clear_directory(newdir)
 
     with mgf.MGF(filename) as spectres:
         for spectre in spectres:

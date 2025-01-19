@@ -7,6 +7,7 @@ filenames = ["no_energy.mgf", "no_smiles.mgf", "inexploitable.mgf", "not_validat
 
 # Créer un dictionnaire avec les SMILES canonisés associés à leur INCHKEY
 # Est-ce qu'on doit stocker quelque part le fichier associé ?
+# Nom du fichier Un fichier avec tous les smiles
 def parse_into_dictionnary(dirname, filenames):
     """
     Extrait un dictionnaire associant chaque InChIKey à son SMILES à partir d'un fichier MGF.
@@ -68,6 +69,9 @@ def canonisation(inch_smiles):
             tmp_smiles = Chem.MolToSmiles(mol, canonical=True)
             if tmp_smiles != smiles:
                 compt_diff_smiles += 1
+                print(inch)
+                print(f"smiles canonisé : {tmp_smiles}")
+                print(f"smiles de départ : {smiles} \n")
             inch_smiles[inch] = tmp_smiles
 
     return inch_smiles, compt_diff_smiles

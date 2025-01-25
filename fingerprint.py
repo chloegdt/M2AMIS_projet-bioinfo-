@@ -5,6 +5,8 @@ from pyteomics import mgf
 from rdkit import Chem
 from rdkit.Chem import rdFingerprintGenerator
 
+from parse_data_final import create_dict_from_smiles
+
 
 FILENAME = "molecules_parsees/energy_102040_precursor_M+H.mgf"
 FPSIZE = 4096
@@ -18,20 +20,22 @@ def getMolecules(filename):
             smiles.add(molecule['params']['smiles'])
     return [Chem.MolFromSmiles(smile) for smile in smiles]
 
-def getMorganFingerprints(filename):
+def getMorganFingerprintsFromFile(filename):
     """ Calcule les fingerprints de Morgan des molecules du fichier """
     morganGen = rdFingerprintGenerator.GetMorganGenerator(radius=3, fpSize=FPSIZE)
     molecules = getMolecules(filename)
-    # molecules.append(Chem.MolFromSmiles("c1c(cccc1)CCO"))
-    # molecules.append(Chem.MolFromSmiles("c1c(cccc1)CCCO"))
     return molecules, [np.array(morganGen.GetFingerprint(molecule)) for molecule in molecules]
 
-def getRDkitFingerprints(filename):
+def getMorganFingerprints(smiles):
+    """ Calcule les fingerprints de Morgan à partir d'une liste de SMILES """
+    molecules = [Chem.MolFromSmiles(smile) for smile in smiles]
+    morganGen = rdFingerprintGenerator.GetMorganGenerator(radius=3, fpSize=FPSIZE)
+    return [np.array(morganGen.GetFingerprint(molecule)) for molecule in molecules]
+
+def getRDkitFingerprintsFromFile(filename):
     """ Calcule les fingerprints RDkit des molecules du fichier """
     rdkitGen = rdFingerprintGenerator.GetRDKitFPGenerator(minPath=1, maxPath=7, fpSize=FPSIZE)
     molecules = getMolecules(filename)
-    # molecules.append(Chem.MolFromSmiles("c1c(cccc1)CCO"))
-    # molecules.append(Chem.MolFromSmiles("c1c(cccc1)CCCO"))
     return molecules, [np.array(rdkitGen.GetFingerprint(molecule)) for molecule in molecules]
 
 
@@ -44,7 +48,7 @@ def fingerprintsSimilarity(fingerprints):
     similarity_matrix = np.zeros((n_fp, n_fp))
 
     for fp in range(n_fp):
-        for target_fp in range(fp + 1, n_fp):
+        for target_fp in range(fp, n_fp):
             fp_or = np.sum(np.bitwise_or(fingerprints[fp], fingerprints[target_fp]))
             fp_and = np.sum(np.bitwise_and(fingerprints[fp], fingerprints[target_fp]))
 
@@ -55,10 +59,8 @@ def fingerprintsSimilarity(fingerprints):
 
 
 def matrixToCSV(matrix, name):
-    """
-        Prend une liste de liste (matrice) en entrée et la sauvegarde au format csv dans le fichier data/nom.csv
-    """
-    folder = "data/"
+    """ Prend une liste de liste (matrice) en entrée et la sauvegarde au format csv dans le fichier similarity/nom.csv """
+    folder = "similarity/"
     os.makedirs(folder, exist_ok=True)
     file = folder + name + '.csv'
 
@@ -67,12 +69,20 @@ def matrixToCSV(matrix, name):
     return file
 
 
+def createEveryMatrix(filename):
+    """ Créé toutes les matrices de similarité """
+    smiles_dict = create_dict_from_smiles(filename)
+    for filename, smiles in smiles_dict.items():
+        fg = getMorganFingerprints(smiles)
+        fg_sim = fingerprintsSimilarity(fg)
+        matrixToCSV(fg_sim, f"fgsim_{filename}")
+
+
 
 if __name__ == '__main__':
     # molecules, fg = getMorganFingerprints(FILENAME)
-    molecules, fg = getRDkitFingerprints(FILENAME)
-    fg_sim = fingerprintsSimilarity(fg)
+    # molecules, fg = getRDkitFingerprints(FILENAME)
+    # fg_sim = fingerprintsSimilarity(fg)
 
-    print(fg_sim)
-    matrixToCSV(fg_sim, "Similarity-Matrix")
     # print(sorted(fg_sim[-1],reverse=False))
+    createEveryMatrix("cluster_molecules_test/smiles.txt")

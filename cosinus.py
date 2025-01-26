@@ -135,8 +135,10 @@ def save_score_to_file(scores_data, output_file):
     # Créer la matrice creuse
     sparse_matrix = coo_matrix((scores, (rows, cols)))
 
-    # Sauvegarder en format MTX
-    mmwrite(output_file, sparse_matrix)
+    # Sauvegarder en format txt
+    with open(output_file, 'w') as f:
+        for i, j, v in zip(sparse_matrix.row, sparse_matrix.col, sparse_matrix.data):
+            f.write(f"{i+1} {j+1} {v}\n")
 
     logging.info(f"Score sauvegardés dans le fichier : {output_file}")
 
@@ -214,7 +216,7 @@ def process_file(file_path, directory_path, tolerance=0.01):
         
     spectres = [process(spectre) for spectre in fichier] 
     spectres = assign_ids_to_spectra(spectres)
-    output_file = os.path.join(directory_path, "resultats_spectres", f"{os.path.splitext(os.path.basename(file_path))[0]}.mtx")
+    output_file = os.path.join(directory_path, "resultats_cosinus_spectres", f"{os.path.splitext(os.path.basename(file_path))[0]}.txt")
     
     calculate(spectres, output_file=output_file, tolerance=tolerance)
 

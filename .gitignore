@@ -1,0 +1,11 @@
+# Ignorer le répertoire contenant les fichiers .mgf
+cluster_molecules_test/
+
+# Ignorer le répertoire contenant les résultats
+manhattan_results/
+similarite_results/
+test_manhattan_results/
+
+manhattan_heatmap.png
+
+ALL_GNPS_cleaned.mgf

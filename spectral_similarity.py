@@ -53,17 +53,6 @@ def print_scores() :
         print(f"Cosine score between {reference.get('formula')} and {query.get('formula')}" +
               f" is {score[0]:.2f} with {score[1]} matched peaks")
 
-    '''
-    # Je range les scores
-    scores_array = scores.scores.to_array()
-    scores_array[:5, :5]["CosineGreedy_score"]
-    #scores_array[:5, :5]["CosineGreedy_matches"]
-
-    #J'affiche le résultat. Les pics et les Smiles des molécules qui ont une valeur de Cosinus proche ou identique
-    best_matches = scores.scores_by_query(spectrums[5], name="CosineGreedy_score", sort=True)
-    print([x[1] for x in best_matches])
-    print([x[0].get("smiles") for x in best_matches])
-    '''
 
 def save_to_csv(scores) :
 

@@ -30,11 +30,11 @@ def clustering(inputdir, outputdir, inflation):
     clear_directory(outputdir)
 
     for file in os.listdir(inputdir):
-        commande = ["mcl", os.path.join(inputdir, file), "--abc", "-I", influation, "-odir", outputdir]
+        commande = ["mcl", os.path.join(inputdir, file), "--abc", "-I", inflation, "-odir", outputdir]
         resulta  = subprocess.run(commande)
 
 if __name__ == "__main__":
     inputdir = "resultats_spectres"
     inflation = "2.0"
     outputdir = "resultats_clusters"
-    clustering(inputdir, outputdir, influation)
+    clustering(inputdir, outputdir, inflation)

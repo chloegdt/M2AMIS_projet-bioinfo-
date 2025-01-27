@@ -16,7 +16,7 @@ def clear_directory(directory):
     os.makedirs(directory)
 
 
-def clustering(inputdir, outputdir, influation):
+def clustering(inputdir, outputdir, inflation):
     """
     Calls the command mcl to create clusters (using markov clustering) from inputdir.
 
@@ -30,11 +30,11 @@ def clustering(inputdir, outputdir, influation):
     clear_directory(outputdir)
 
     for file in os.listdir(inputdir):
-        commande = ["mcl", inputdir + file, "--abc", "-I", influation, "-odir", outputdir]
+        commande = ["mcl", os.path.join(inputdir, file), "--abc", "-I", influation, "-odir", outputdir]
         resulta  = subprocess.run(commande)
 
 if __name__ == "__main__":
-    inputdir = "resultats_spectres/"
-    influation = "2.0"
+    inputdir = "resultats_spectres"
+    inflation = "2.0"
     outputdir = "resultats_clusters"
     clustering(inputdir, outputdir, influation)

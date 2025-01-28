@@ -86,7 +86,7 @@ def createEveryMatrix(file_path):
     for filename, smiles in smiles_dict.items():
         fingerprints = getMorganFingerprints(smiles)
         matrix = fingerprintSimilarity(fingerprints)
-        matrixToTxt(matrix, f"fingerprints_{filename.split('.')[0]}")
+        matrixToTxt(matrix, f"fg_{filename}")
 
 
 
@@ -95,6 +95,6 @@ if __name__ == '__main__':
 
     # fingerprints = getMorganFingerprints(getSmiles(file_test))
     # matrix = fingerprintSimilarity(fingerprints)
-    # matrixToTxt(matrix, "fingerprints_" + file_test.split("/")[1].split(".")[0])
+    # matrixToTxt(matrix, f"fg_{file_test.split('/')[1]}")
 
     createEveryMatrix(FILENAME)

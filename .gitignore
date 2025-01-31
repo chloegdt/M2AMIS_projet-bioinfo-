@@ -2,6 +2,7 @@ projet-bioinfo/
 ALL_GNPS_cleaned.mgf
 Cluster.mgf
 resultats_clusters_graph/
-clusters_spectres_cos/
 resultats_spectres_cosinus/
 resultats_smiles_tanimoto/
+clusters_spectres_cosinus/
+clusters_smiles_tanimoto/

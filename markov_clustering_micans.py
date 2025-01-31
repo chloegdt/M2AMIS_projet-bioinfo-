@@ -34,7 +34,11 @@ def clustering(inputdir, outputdir, inflation):
         resulta  = subprocess.run(commande)
 
 if __name__ == "__main__":
-    inputdir = "resultats_spectres"
-    inflation = "2.0"
-    outputdir = "resultats_clusters"
+    # inputdir = "resultats_smiles_tanimoto"
+    inputdir = "resultats_spectres_cosinus"
+    # outputdir = "clusters_smiles_tanimoto"
+    outputdir = "clusters_spectres_cosinus"
+    # inflation = "14.0" # pour les smiles
+    # inflation = "1.1" # pour les spectres
+    inflation = "1.1"
     clustering(inputdir, outputdir, inflation)

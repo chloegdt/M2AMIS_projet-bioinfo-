@@ -38,6 +38,9 @@ if __name__ == "__main__":
     inputdir = "resultats_spectres_cosinus"
     # outputdir = "clusters_smiles_tanimoto"
     outputdir = "clusters_spectres_cosinus"
+
+    # Je pense que le mieux c'est d'utiliser inflation = "2.0" pour les spectres
+    # et de regarder si on peut avoir un truc similaire pour les smiles avec DBSCAN
     # inflation = "14.0" # pour les smiles
     # inflation = "1.1" # pour les spectres
     inflation = "1.1"

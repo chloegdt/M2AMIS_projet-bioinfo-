@@ -87,7 +87,7 @@ def plot_interactive_network(file_path, output_file="network.html"):
         print("No nodes found!")
         return
 
-    net = Network(notebook=True, height="800px", width="100%", bgcolor="black", font_color="white")
+    net = Network(notebook=True, height="1000px", width="100%", bgcolor="black", font_color="white")
     
     for node, attrs in G.nodes(data=True):
         net.add_node(node, label=node, color=attrs.get("color", "gray"), size=attrs.get("size", 10))
@@ -105,5 +105,5 @@ def plot_interactive_network(file_path, output_file="network.html"):
 
 file = "test.txt"
 file_path = "resultats_clusters_dbscan/clusters_smiles_dbscan/energy_10.0_precursor_M+H.txt"
-plot_cluster_network(file_path)
-#plot_interactive_network(file_path)
+#plot_cluster_network(file_path)
+plot_interactive_network(file_path)

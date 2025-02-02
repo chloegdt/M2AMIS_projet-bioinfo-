@@ -37,7 +37,7 @@ def getMorganFingerprints(smiles):
     return [np.array(morganGen.GetFingerprint(molecule)) for molecule in molecules]
 
 
-def fingerprintSimilarity(fingerprints):
+def tanimotoSimilarity(fingerprints):
     """
     Calcule la similarité de Tanimoto entre chaque fingerprints.
     Tanimoto(A, B) = (A et B) / (A ou B)
@@ -88,7 +88,7 @@ def createEveryMatrix(file_path, directory_path):
 
     for filename, smiles in smiles_dict.items():
         fingerprints = getMorganFingerprints(smiles)
-        matrix = fingerprintSimilarity(fingerprints)
+        matrix = tanimotoSimilarity(fingerprints)
         matrixToTxt(matrix, directory_path, filename)
 
 
@@ -97,7 +97,7 @@ if __name__ == '__main__':
     # file_test = "cluster_molecules_test/energy_100.0_precursor_M+H.mgf"
 
     # fingerprints = getMorganFingerprints(getSmiles(file_test))
-    # matrix = fingerprintSimilarity(fingerprints)
+    # matrix = tanimotoSimilarity(fingerprints)
     # matrixToTxt(matrix, "cluster_molecules/resultats_fingerprints/", f"fg_{file_test.split('/')[1]}")
 
     createEveryMatrix(FILENAME, "cluster_molecules/resultats_fingerprints/")

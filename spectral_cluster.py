@@ -105,25 +105,28 @@ class Cluster :
             with open(file, 'r') as f:
                 for line in f:
                     r, c, val = map(float, line.split())
+                    distance_value = 1 - val
+                    
                     row.append(int(r))
                     col.append(int(c))
-                    data.append(val)
+                    data.append(distance_value)
 
-                # Create a sparse matrix (COO format) and convert to CSR
-                self.matrix = coo_matrix((data, (row, col))).tocsr()
+            sparse_matrix = coo_matrix((data, (row, col))).tocsr()
+            self.matrix = sparse_matrix
 
-                dbscan = DBSCAN(eps=0.7, min_samples=2, metric='precomputed')
-                self.labels = dbscan.fit_predict(self.matrix)
+            dbscan = DBSCAN(eps=0.7, min_samples=2, metric='precomputed')
+            self.labels = dbscan.fit_predict(self.matrix)
 
-                print("Cluster Labels:", self.labels)
-                return self
+            print("Cluster Labels:", self.labels)
+            return self
 
 
 # MAIN
 file = 'energy_18.0_precursor_M+H.csv'
 file_s = 'energy_23.0_precursor_2M-2H+Na.mtx'
+file_f = 'fingerprints_energy_25.0_precursor_M-H.mgf.txt'
 
 cluster = Cluster
 Cluster.clustering(cluster, file_s, True)
 
-visualization(cluster.matrix, cluster.labels, True)
+visualization(cluster.matrix, cluster.labels, False)

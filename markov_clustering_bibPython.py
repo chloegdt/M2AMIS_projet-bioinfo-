@@ -80,7 +80,7 @@ def clustering(inputdir, outputdir, inflation, draw_graph):
             draw_cluster(outputdir, file, matrix, clusters) 
 
 if __name__ == "__main__":
-    inputdir = "resultats_spectres"
+    inputdir = "resultats_smiles_cosinus"
     inflation = 2.0
     outputdir = "resultats_clusters"
     clustering(inputdir, outputdir, inflation, True)

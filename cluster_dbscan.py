@@ -34,9 +34,10 @@ class SpectraClustering:
         dense_matrix = self.matrix.toarray()
         reducer = umap.UMAP(n_components=2, metric='precomputed', random_state=42)
         umap_embedding = reducer.fit_transform(self.distance_matrix)
-        # 0.25 et manhattan pour le fichier 10.0
-        clusterer = DBSCAN(eps=0.2, min_samples=2, metric='manhattan')
-        self.labels = clusterer.fit_predict(umap_embedding)
+        # eps=0.2 pour morgan fingerprint et on ne fait pas la reduction
+        # pour le descriptor on enleve la réduction et espilon = 0.25
+        clusterer = DBSCAN(eps=0.25, min_samples=2, metric='precomputed')
+        self.labels = clusterer.fit_predict(self.distance_matrix)
 
         print("Matrice de distance (10 premières lignes) :")
         print(self.distance_matrix[:10, :10])
@@ -72,7 +73,7 @@ class SpectraClustering:
                 f.write("\t".join(map(str, ids)) + "\n")
 
 
-file = 'resultats_spectres_cosinus/energy_30.0_precursor_M+H.txt'
+file = 'resultats_smiles_descriptors/energy_30.0_precursor_M+H.txt'
 
 clustering = SpectraClustering(file)
 clustering.load_data()
@@ -82,7 +83,7 @@ clustering.save_clusters_to_file('energy_30.0_precursor_M+H.txt')
 print("Labels de clusters :")
 print(labels)
 
-#clustering.visualize_clusters()
+clustering.visualize_clusters()
 
 i = 0
 for l in labels:

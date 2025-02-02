@@ -28,7 +28,7 @@ def get_mz_values(spectres):
 
     for spectre in spectres:
         if spectre.peaks:
-            mz_values = spetre.peaks.mz
+            mz_values = spectre.peaks.mz
             min_mz = min(min_mz, mz_values.min())
             max_mz = max(max_mz, mz_values.max())
 

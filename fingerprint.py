@@ -11,15 +11,15 @@ FILENAME = "cluster_molecules_test/smiles.txt"
 FPSIZE = 4096
 
 
-def getSmiles(filename):
+def getSmiles(file_path):
     """
     Récupère les smiles d'un fichier mgf.
     
-    @param filename: chemin du fichier mgf à lire.
+    @param file_path: chemin du fichier mgf à lire.
     @return: liste de smiles.
     """
     smiles = list()
-    with mgf.MGF(filename) as reader:
+    with mgf.MGF(file_path) as reader:
         for molecule in reader:
             smiles.append(molecule['params']['smiles'])
     return smiles
@@ -57,36 +57,39 @@ def fingerprintSimilarity(fingerprints):
     return similarity_matrix
 
 
-def matrixToTxt(matrix, filename):
+def matrixToTxt(matrix, directory_path, filename):
     """
-    Sauvegarde une matrice dans un fichier .txt sous forme de matrice creuse.
+    Sauvegarde une matrice de similarité dans un fichier .txt sous forme de matrice creuse.
 
     @param matrix: matrice de similarité.
-    @param filename: nom du fichier.
+    @param directory_path: chemin du dossier de sauvegarde.
+    @param filename: nom du fichier de sauvegarde.
     """
-    directory_path = "cluster_molecules/resultats_fingerprints/"
     output_path = os.path.join(directory_path, f"{os.path.splitext(os.path.basename(filename))[0]}.txt")
     os.makedirs(directory_path, exist_ok=True)
 
     with open(output_path, 'w') as f:
         for i, list_sim in enumerate(matrix):
             for j, sim in enumerate(list_sim):
-                if sim > 0:
+                if i == j:
+                    f.write(f"{i+1} {j+1} {1.0}\n")
+                elif sim > 0:
                     f.write(f"{i+1} {j+1} {sim}\n")
 
 
-def createEveryMatrix(file_path):
+def createEveryMatrix(file_path, directory_path):
     """
     Calcule et sauvegarde (en fichier txt) les matrices de similarité à partir d'un fichier .txt contenant les smiles.
     
-    @param filename: chemin du fichier .txt à lire.
+    @param file_path: chemin du fichier .txt à lire.
+    @param directory_path: chemin du dossier de sauvegarde.
     """
     smiles_dict = create_dict_from_smiles(file_path)
 
     for filename, smiles in smiles_dict.items():
         fingerprints = getMorganFingerprints(smiles)
         matrix = fingerprintSimilarity(fingerprints)
-        matrixToTxt(matrix, f"fg_{filename}")
+        matrixToTxt(matrix, directory_path, filename)
 
 
 
@@ -95,6 +98,6 @@ if __name__ == '__main__':
 
     # fingerprints = getMorganFingerprints(getSmiles(file_test))
     # matrix = fingerprintSimilarity(fingerprints)
-    # matrixToTxt(matrix, f"fg_{file_test.split('/')[1]}")
+    # matrixToTxt(matrix, "cluster_molecules/resultats_fingerprints/", f"fg_{file_test.split('/')[1]}")
 
-    createEveryMatrix(FILENAME)
+    createEveryMatrix(FILENAME, "cluster_molecules/resultats_fingerprints/")

@@ -104,6 +104,6 @@ def plot_interactive_network(file_path, output_file="network.html"):
 
 
 file = "test.txt"
-file_path = "resultats_clusters_dbscan/clusters_smiles_dbscan/energy_10.0_precursor_M+H.txt"
+file_path = "clusters_smiles_dbscan/energy_10.0_precursor_M+H.txt"
 #plot_cluster_network(file_path)
 plot_interactive_network(file_path)

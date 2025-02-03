@@ -7,29 +7,15 @@ from rdkit.Chem import FilterCatalog
 from rdkit.Chem.FilterCatalog import FilterCatalogParams
 
 from parse_data_final import create_dict_from_smiles
-from fingerprint import tanimotoSimilarity, matrixToTxt, createEveryMatrix, FILENAME
-
-
-def getMolecules(filename):
-    """
-    Récupère les smiles d'un fichier mgf et les transformes en objets rdkit molécule.
-    
-    @param filename: chemin du fichier mgf à lire.
-    @return: liste d'objets molécule.
-    """
-    smiles = list()
-    with mgf.MGF(filename) as reader:
-        for molecule in reader:
-            smiles.append(molecule['params']['smiles'])
-    return [Chem.MolFromSmiles(smile) for smile in smiles]
+from fingerprint import tanimotoSimilarity, matrixToTxt, createEveryMatrix, FILENAME, create_dict_from_smiles
 
 
 def getFunctionalGroups(molecules):
     """
-    Calcule la matrice de distances Manhattan entre les molécules à partir de leurs groupes fonctionnels.
-    
-    @param molecules: liste d'objet molécules rdkit.
-    @return: matrice des distances Manhattan.
+    Calcule une matrice contenant pour chaque molécule la présence d'une liste de groupes fonctionnels (1 présent, 0 non).
+
+    @param molecules: liste d'objets molécules rdkit.
+    @return: matrice contenant les groupes fonctionnels de chaque molécule.
     """
     functional_groups = [
         "[CX3](=O)[OX2H1]", # Acide Carboxylique
@@ -68,7 +54,7 @@ def getFunctionalGroups(molecules):
 def manhattanDistance(molecules_groups):
     """
     Calcule la distance Manhattan entre les molécules à partir de leurs groupes fonctionnels.
-    
+
     @param molecules_groups: matrice contenant les groupes fonctionnels de chaque molécule.
     @return: matrice des distances Manhattan.
     """
@@ -82,20 +68,39 @@ def manhattanDistance(molecules_groups):
     return distance_matrix
 
 
+def createEveryMatrix(file_path, directory_path):
+    """
+    Calcule et sauvegarde (en fichier txt) les matrices de similarité à partir d'un fichier .txt contenant les smiles.
+
+    @param file_path: chemin du fichier .txt à lire.
+    @param directory_path: chemin du dossier de sauvegarde.
+    """
+    smiles_dict = create_dict_from_smiles(file_path)
+
+    for filename, smiles in smiles_dict.items():
+        molecules = [Chem.MolFromSmiles(smile) for smile in smiles]
+        groupes = getFunctionalGroups(molecules)
+        matrix = tanimotoSimilarity(groupes)
+        matrixToTxt(matrix, directory_path, filename)
+
+
 
 if __name__ == "__main__":
     files = [
-        "cluster_molecules_test/energy_50.0_precursor_M+H.mgf",
-        "cluster_molecules_test/energy_10.0_precursor_M+H.mgf",
-        "cluster_molecules_test/energy_30.0_precursor_M+H.mgf",
+        "energy_50.0_precursor_M+H.mgf",
+        "energy_10.0_precursor_M+H.mgf",
+        "energy_30.0_precursor_M+H.mgf",
+        "energy_25.0_precursor_M+Na.mgf",
     ]
 
-    for i, file in enumerate(files):
-        molecules = getMolecules(file)
+    smiles_dict = create_dict_from_smiles(FILENAME)
+    smiles = [smiles_dict.get(file) for file in files]
+
+    for i, smile in enumerate(smiles):
+        molecules = [Chem.MolFromSmiles(s) for s in smile]
         groupes = getFunctionalGroups(molecules)
         sim = tanimotoSimilarity(groupes)
-        matrixToTxt(sim, "cluster_molecules/resultats_groupes-fonc/", file.split('/')[1])
+        matrixToTxt(sim, "cluster_molecules/resultats_groupes-fonc/", files[i])
         print(f"Fichier {i+1} traité.")
 
-
-    # createEveryMatrix(FILENAME, "cluster_molecules/resultats_groupes-func/")
+    # createEveryMatrix(FILENAME, "cluster_molecules/resultats_groupes-fonc/")

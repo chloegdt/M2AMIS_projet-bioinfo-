@@ -48,7 +48,7 @@ def PCA_visualization(matrix, labels) :
     pca = PCA(n_components=2)
     reduced_data = pca.fit_transform(matrix)
 
-    plt.subplot(1, 3, 3)
+    #plt.subplot(1, 3, 3)
     unique_labels = set(labels)
     for label in unique_labels:
         cluster_points = reduced_data[labels == label]
@@ -68,8 +68,8 @@ def visualization(matrix, labels, pca) :
     if pca :
         plt.figure(figsize=(20, 15))
         PCA_visualization(matrix, labels)
-        Umap_visualization(matrix, labels, pca)
-        T_SNE_visualization(matrix, labels, pca)
+        #Umap_visualization(matrix, labels, pca)
+        #T_SNE_visualization(matrix, labels, pca)
     else :
         plt.figure(figsize=(15, 15))
         Umap_visualization(matrix, labels, pca)
@@ -122,11 +122,14 @@ class Cluster :
 
 
 # MAIN
-file = 'energy_18.0_precursor_M+H.csv'
-file_s = 'energy_23.0_precursor_2M-2H+Na.mtx'
-file_f = 'fingerprints_energy_25.0_precursor_M-H.mgf.txt'
+file_spect10_MH = "resultats_sim_cos/energy_10.0_precursor_M+H.txt"
+file_spect30_MH = "resultats_sim_cos/energy_30.0_precursor_M+H.txt"
+file_spect50_MH = "resultats_sim_cos/energy_50.0_precursor_M+H.txt"
+file_smil10_MH = "resultats_sim_smi/energy_10.0_precursor_M+H.txt"
+file_smil30_MH = "resultats_sim_smi/energy_30.0_precursor_M+H.txt"
+file_smil50_MH = "resultats_sim_smi/energy_50.0_precursor_M+H.txt/energy_50.0_precursor_M+H.txt"
 
 cluster = Cluster
-Cluster.clustering(cluster, file_s, True)
+Cluster.clustering(cluster, file_smil10_MH, True)
 
 visualization(cluster.matrix, cluster.labels, False)

@@ -1,1 +1,4 @@
 similarity_scores.csv
+resultats_sim_cos/
+resultats_sim_smi/
+resultats_clusters_dbscan/

@@ -1,14 +1,15 @@
 import os
 import logging
 import numpy as np
+import fingerprint as fg
 
 from pyteomics import mgf
 from rdkit import Chem
 from rdkit.Chem import FilterCatalog
 from rdkit.Chem.FilterCatalog import FilterCatalogParams
-
 from parse_data_final import create_dict_from_smiles
-from fingerprint import tanimotoSimilarity, matrixToTxt, createEveryMatrix, FILENAME, create_dict_from_smiles
+
+SAVE_DIRECTORY = "cluster_molecules/resultats_groupes-fonc/"
 
 
 def getFunctionalGroups(molecules):
@@ -81,30 +82,29 @@ def createEveryMatrix(file_path, directory_path):
     for filename, smiles in smiles_dict.items():
         molecules = [Chem.MolFromSmiles(smile) for smile in smiles]
         groupes = getFunctionalGroups(molecules)
-        matrix = tanimotoSimilarity(groupes)
-        matrixToTxt(matrix, directory_path, filename)
+        matrix = fg.tanimotoSimilarity(groupes)
+        fg.matrixToTxt(matrix, directory_path, filename)
+
     logging.info(f"Création des matrices de similarité terminé (résultats dans le dossier: {directory_path})")
 
 
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-    files = [
-        "energy_50.0_precursor_M+H.mgf",
-        "energy_10.0_precursor_M+H.mgf",
-        "energy_30.0_precursor_M+H.mgf",
-        "energy_25.0_precursor_M+Na.mgf",
-    ]
-
-    smiles_dict = create_dict_from_smiles(FILENAME)
+def createChosenMatrix(files):
+    smiles_dict = create_dict_from_smiles(fg.FILENAME)
     smiles = [smiles_dict.get(file) for file in files]
 
     for i, smile in enumerate(smiles):
         molecules = [Chem.MolFromSmiles(s) for s in smile]
         groupes = getFunctionalGroups(molecules)
-        sim = tanimotoSimilarity(groupes)
-        matrixToTxt(sim, "cluster_molecules/resultats_groupes-fonc/", files[i])
+        sim = fg.tanimotoSimilarity(groupes)
+        fg.matrixToTxt(sim, SAVE_DIRECTORY, files[i])
         logging.info(f"Fichier {i+1} traité.")
-    logging.info(f"Traitement terminé, résultats dans le dossier: cluster_molecules/resultats_groupes-fonc/")
 
-    # createEveryMatrix(FILENAME, "cluster_molecules/resultats_groupes-fonc/")
+    logging.info(f"Traitement terminé, résultats dans le dossier: {SAVE_DIRECTORY}")
+
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+    createChosenMatrix(fg.FILES)
+    # createEveryMatrix(fg.FILENAME, SAVE_DIRECTORY)

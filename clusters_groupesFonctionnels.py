@@ -129,7 +129,7 @@ def groupCluster(molecules_list):
 
 if __name__ == "__main__":
     dico_smiles = create_dict_from_smiles("cluster_molecules_test/smiles.txt")
-    cluster_list = cluster_into_list("clusters_smiles_dbscan_descriptor/energy_50.0_precursor_M+H.txt")
+    cluster_list = cluster_into_list("energy_50.0_precursor_M+H.txt")
     cluster_smiles_list = id_to_smiles("energy_50.0_precursor_M+H.mgf", cluster_list, dico_smiles)
     molecules_list = cluster_to_molecules(cluster_smiles_list)
     print(groupCluster(molecules_list))

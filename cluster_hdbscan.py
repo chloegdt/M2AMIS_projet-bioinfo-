@@ -34,7 +34,7 @@ class SpectraClustering:
         dense_matrix = self.matrix.toarray()
         reducer = umap.UMAP(n_components=2, metric='precomputed', random_state=42)
         umap_embedding = reducer.fit_transform(self.distance_matrix)
-        clusterer = hdbscan.HDBSCAN(min_cluster_size=2, min_samples=5, metric='manhattan', alpha=1.0)
+        clusterer = hdbscan.HDBSCAN(min_cluster_size=2, min_samples=4, metric='euclidean', alpha=1.0)
         self.labels = clusterer.fit_predict(umap_embedding)
 
         print("Matrice de distance (10 premières lignes) :")
@@ -47,7 +47,7 @@ class SpectraClustering:
 
 
     def visualize_clusters(self):
-        reducer = umap.UMAP(n_components=5, metric='precomputed', random_state=42)
+        reducer = umap.UMAP(n_components=2, metric='precomputed', random_state=42)
         umap_results = reducer.fit_transform(self.distance_matrix)
 
         plt.figure(figsize=(10, 8))
@@ -81,7 +81,7 @@ clustering.save_clusters_to_file('energy_50.0_precursor_M+H.txt')
 print("Labels de clusters :")
 print(labels)
 
-#clustering.visualize_clusters()
+clustering.visualize_clusters()
 
 i = 0
 for l in labels:

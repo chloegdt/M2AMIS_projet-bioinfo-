@@ -29,15 +29,14 @@ class SpectraClustering:
         self.matrix = self.matrix + self.matrix.T - coo_matrix((self.matrix.data, (self.matrix.col, self.matrix.row)), shape=self.matrix.shape)
         self.distance_matrix = 1 - self.matrix.toarray()
 
-
     def perform_clustering(self):
         dense_matrix = self.matrix.toarray()
         reducer = umap.UMAP(n_components=2, metric='precomputed', random_state=42)
         umap_embedding = reducer.fit_transform(self.distance_matrix)
         # eps=0.2 pour morgan fingerprint et on ne fait pas la reduction
         # pour le descriptor on enleve la réduction et espilon = 0.25
-        clusterer = DBSCAN(eps=0.25, min_samples=2, metric='precomputed')
-        self.labels = clusterer.fit_predict(self.distance_matrix)
+        clusterer = DBSCAN(eps=0.5, min_samples=4, metric='euclidean')
+        self.labels = clusterer.fit_predict(umap_embedding)
 
         print("Matrice de distance (10 premières lignes) :")
         print(self.distance_matrix[:10, :10])
@@ -49,12 +48,12 @@ class SpectraClustering:
 
 
     def visualize_clusters(self):
-        reducer = umap.UMAP(n_components=5, metric='precomputed', random_state=42)
+        reducer = umap.UMAP(n_components=2, metric='precomputed', random_state=42)
         umap_results = reducer.fit_transform(self.distance_matrix)
 
         plt.figure(figsize=(10, 8))
         plt.scatter(umap_results[:, 0], umap_results[:, 1], c=self.labels, cmap='viridis', s=50, alpha=0.7)
-        plt.title('Clustering des Spectres avec HDBSCAN et UMAP')
+        plt.title('Clustering des Spectres avec DBSCAN et UMAP')
         plt.xlabel('UMAP Dimension 1')
         plt.ylabel('UMAP Dimension 2')
         plt.colorbar(label='Cluster ID')
@@ -73,12 +72,12 @@ class SpectraClustering:
                 f.write("\t".join(map(str, ids)) + "\n")
 
 
-file = 'resultats_smiles_descriptors/energy_30.0_precursor_M+H.txt'
+file = 'resultats_spectres_cosinus/energy_50.0_precursor_M+H.txt'
 
 clustering = SpectraClustering(file)
 clustering.load_data()
 labels = clustering.perform_clustering()
-clustering.save_clusters_to_file('energy_30.0_precursor_M+H.txt')
+clustering.save_clusters_to_file('energy_50.0_precursor_M+H.txt')
 
 print("Labels de clusters :")
 print(labels)

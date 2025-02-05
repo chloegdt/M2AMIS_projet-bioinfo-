@@ -34,7 +34,6 @@ class SpectraClustering:
         dense_matrix = self.matrix.toarray()
         reducer = umap.UMAP(n_components=2, metric='precomputed', random_state=42)
         umap_embedding = reducer.fit_transform(self.distance_matrix)
-        # 0.25 et manhattan pour le fichier 10.0
         clusterer = DBSCAN(eps=0.2, min_samples=2, metric='manhattan')
         self.labels = clusterer.fit_predict(umap_embedding)
 

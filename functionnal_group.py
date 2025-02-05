@@ -1,4 +1,5 @@
 import os
+import logging
 import numpy as np
 
 from pyteomics import mgf
@@ -35,7 +36,6 @@ def getFunctionalGroups(molecules):
         "C=C", #Alcène
     ]
     functional_groups = [Chem.MolFromSmarts(smarts) for smarts in functional_groups]
-
     molecules_groups = np.zeros((len(molecules), len(functional_groups)), dtype=int)
 
     for i, mol in enumerate(molecules):
@@ -75,6 +75,7 @@ def createEveryMatrix(file_path, directory_path):
     @param file_path: chemin du fichier .txt à lire.
     @param directory_path: chemin du dossier de sauvegarde.
     """
+    logging.info(f"Début du traitement de tous les fichiers.")
     smiles_dict = create_dict_from_smiles(file_path)
 
     for filename, smiles in smiles_dict.items():
@@ -82,10 +83,12 @@ def createEveryMatrix(file_path, directory_path):
         groupes = getFunctionalGroups(molecules)
         matrix = tanimotoSimilarity(groupes)
         matrixToTxt(matrix, directory_path, filename)
+    logging.info(f"Création des matrices de similarité terminé (résultats dans le dossier: {directory_path})")
 
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     files = [
         "energy_50.0_precursor_M+H.mgf",
         "energy_10.0_precursor_M+H.mgf",
@@ -101,6 +104,7 @@ if __name__ == "__main__":
         groupes = getFunctionalGroups(molecules)
         sim = tanimotoSimilarity(groupes)
         matrixToTxt(sim, "cluster_molecules/resultats_groupes-fonc/", files[i])
-        print(f"Fichier {i+1} traité.")
+        logging.info(f"Fichier {i+1} traité.")
+    logging.info(f"Traitement terminé, résultats dans le dossier: cluster_molecules/resultats_groupes-fonc/")
 
     # createEveryMatrix(FILENAME, "cluster_molecules/resultats_groupes-fonc/")

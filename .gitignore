@@ -2,3 +2,6 @@ similarity_scores.csv
 resultats_sim_cos/
 resultats_sim_smi/
 resultats_clusters_dbscan/
+lib/
+Cluster.mgf
+common_clusters.html

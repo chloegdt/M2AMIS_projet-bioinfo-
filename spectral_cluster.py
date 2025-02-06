@@ -48,7 +48,7 @@ def PCA_visualization(matrix, labels) :
     pca = PCA(n_components=2)
     reduced_data = pca.fit_transform(matrix)
 
-    #plt.subplot(1, 3, 3)
+    plt.subplot(1, 3, 3)
     unique_labels = set(labels)
     for label in unique_labels:
         cluster_points = reduced_data[labels == label]
@@ -68,8 +68,8 @@ def visualization(matrix, labels, pca) :
     if pca :
         plt.figure(figsize=(20, 15))
         PCA_visualization(matrix, labels)
-        #Umap_visualization(matrix, labels, pca)
-        #T_SNE_visualization(matrix, labels, pca)
+        Umap_visualization(matrix, labels, pca)
+        T_SNE_visualization(matrix, labels, pca)
     else :
         plt.figure(figsize=(15, 15))
         Umap_visualization(matrix, labels, pca)

@@ -1,5 +1,6 @@
 import os
 import logging
+import numpy as np
 
 from pyteomics import mgf
 from rdkit import Chem

@@ -1,5 +1,5 @@
 import os
-import numpy as np
+import logging
 
 from pyteomics import mgf
 from rdkit import Chem
@@ -8,8 +8,14 @@ from rdkit.Chem import rdFingerprintGenerator
 from parse_data_final import create_dict_from_smiles
 
 FILENAME = "cluster_molecules_test/smiles.txt"
+SAVE_DIRECTORY = "cluster_molecules/resultats_fingerprints/"
 FPSIZE = 4096
-
+FILES = [
+    "energy_50.0_precursor_M+H.mgf",
+    "energy_10.0_precursor_M+H.mgf",
+    "energy_30.0_precursor_M+H.mgf",
+    "energy_25.0_precursor_M+Na.mgf",
+]
 
 def getSmiles(file_path):
     """
@@ -49,6 +55,10 @@ def tanimotoSimilarity(fingerprints):
     similarity_matrix = np.zeros((n, n))
     for i in range(n):
         for j in range(i, n):
+            if i == j:
+                similarity_matrix[i, j] = 1
+                continue
+                
             fp_or = np.sum(np.bitwise_or(fingerprints[i], fingerprints[j]))
             fp_and = np.sum(np.bitwise_and(fingerprints[i], fingerprints[j]))
 
@@ -71,9 +81,7 @@ def matrixToTxt(matrix, directory_path, filename):
     with open(output_path, 'w') as f:
         for i, list_sim in enumerate(matrix):
             for j, sim in enumerate(list_sim):
-                if i == j:
-                    f.write(f"{i+1} {j+1} {1.0}\n")
-                elif sim > 0:
+                if sim > 0:
                     f.write(f"{i+1} {j+1} {sim}\n")
 
 
@@ -84,6 +92,7 @@ def createEveryMatrix(file_path, directory_path):
     @param file_path: chemin du fichier .txt à lire.
     @param directory_path: chemin du dossier de sauvegarde.
     """
+    logging.info(f"Début du traitement de tous les fichiers.")
     smiles_dict = create_dict_from_smiles(file_path)
 
     for filename, smiles in smiles_dict.items():
@@ -91,13 +100,25 @@ def createEveryMatrix(file_path, directory_path):
         matrix = tanimotoSimilarity(fingerprints)
         matrixToTxt(matrix, directory_path, filename)
 
+    logging.info(f"Création des matrices de similarité terminé (résultats dans le dossier: {directory_path})")
+
+
+def createChosenMatrix(files):
+    smiles_dict = create_dict_from_smiles(FILENAME)
+    smiles = [smiles_dict.get(file) for file in files]
+
+    for i, smile in enumerate(smiles):
+        fingerprints = getMorganFingerprints(smile)
+        matrix = tanimotoSimilarity(fingerprints)
+        matrixToTxt(matrix, SAVE_DIRECTORY, files[i])
+        logging.info(f"Fichier {i+1} traité.")
+
+    logging.info(f"Traitement terminé, résultats dans le dossier: {SAVE_DIRECTORY}")
+
 
 
 if __name__ == '__main__':
-    # file_test = "cluster_molecules_test/energy_100.0_precursor_M+H.mgf"
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-    # fingerprints = getMorganFingerprints(getSmiles(file_test))
-    # matrix = tanimotoSimilarity(fingerprints)
-    # matrixToTxt(matrix, "cluster_molecules/resultats_fingerprints/", f"fg_{file_test.split('/')[1]}")
-
-    createEveryMatrix(FILENAME, "cluster_molecules/resultats_fingerprints/")
+    createChosenMatrix(FILES)
+    # createEveryMatrix(FILENAME, SAVE_DIRECTORY)

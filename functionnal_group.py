@@ -88,9 +88,15 @@ def createEveryMatrix(file_path, directory_path):
     logging.info(f"Création des matrices de similarité terminé (résultats dans le dossier: {directory_path})")
 
 
-def createChosenMatrix(files):
+def main(files):
+    """
+    Fonction principale pour calculer et sauvegarder (en fichier txt) les matrices de similarité des fichiers spécifiés en entrée.
+
+    @param files: Liste contenant les nom des fichiers à traiter.
+    """
     smiles_dict = create_dict_from_smiles(fg.FILENAME)
     smiles = [smiles_dict.get(file) for file in files]
+    logging.info(f"Début du calcul des similarités de groupes fonctionnels à partir des SMILES.")
 
     for i, smile in enumerate(smiles):
         molecules = [Chem.MolFromSmiles(s) for s in smile]
@@ -99,7 +105,7 @@ def createChosenMatrix(files):
         fg.matrixToTxt(sim, SAVE_DIRECTORY, files[i])
         logging.info(f"Fichier {i+1} traité.")
 
-    logging.info(f"Traitement terminé, résultats dans le dossier: {SAVE_DIRECTORY}")
+    logging.info(f"Calcul des similarités de groupes fonctionnels à partir des SMILES terminé. \nRésultats dans le dossier: {SAVE_DIRECTORY}")
 
 
 

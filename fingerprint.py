@@ -16,7 +16,9 @@ FILES = [
     "energy_10.0_precursor_M+H.mgf",
     "energy_30.0_precursor_M+H.mgf",
     "energy_25.0_precursor_M+Na.mgf",
+    "energy_37.0_precursor_M+Na.mgf",
 ]
+
 
 def getSmiles(file_path):
     """
@@ -59,7 +61,7 @@ def tanimotoSimilarity(fingerprints):
             if i == j:
                 similarity_matrix[i, j] = 1
                 continue
-                
+
             fp_or = np.sum(np.bitwise_or(fingerprints[i], fingerprints[j]))
             fp_and = np.sum(np.bitwise_and(fingerprints[i], fingerprints[j]))
 
@@ -104,17 +106,18 @@ def createEveryMatrix(file_path, directory_path):
     logging.info(f"Création des matrices de similarité terminé (résultats dans le dossier: {directory_path})")
 
 
-def createChosenMatrix(files):
+def main(files):
     smiles_dict = create_dict_from_smiles(FILENAME)
     smiles = [smiles_dict.get(file) for file in files]
+    logging.info(f"Début du calcul des similarités fingerprints des SMILES.")
 
     for i, smile in enumerate(smiles):
         fingerprints = getMorganFingerprints(smile)
         matrix = tanimotoSimilarity(fingerprints)
         matrixToTxt(matrix, SAVE_DIRECTORY, files[i])
-        logging.info(f"Fichier {i+1} traité.")
+        logging.info(f"Fichier {files[i]} traité.")
 
-    logging.info(f"Traitement terminé, résultats dans le dossier: {SAVE_DIRECTORY}")
+    logging.info(f"Calcul des similarités fingerprints des SMILES terminé. \nRésultats dans le dossier: {SAVE_DIRECTORY}")
 
 
 

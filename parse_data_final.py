@@ -4,6 +4,7 @@ import shutil
 from rdkit import Chem
 from pyteomics import mgf
 
+fields_to_remove = ["charge", "ontology", "ionmode", "instrumenttype", "instrument", "manufacturer", "ms_mass_analyzer", "ms_ionisation", "ms_dissociation_method", "scans"]
 
 def extract_collision_energy(params):
     """
@@ -104,7 +105,7 @@ def clear_directory(directory):
     os.makedirs(directory)
 
 
-def parse_mgf(filename, newdir, dico_smiles=None):
+def parse_mgf(filename, newdir, precursorname, dico_smiles=None):
     """
     Parses an MGF file, processes spectra, and writes them into categorized files.
     
@@ -199,6 +200,35 @@ def create_dict_from_smiles(file_path):
                 smiles_dict[current_key].append(line)
 
     return smiles_dict
+
+
+def main():
+    """
+     Execute the parsing of files Cluster.mgf and ALL_GNPS. Only existing files will
+     be parsed.
+    """
+
+    filename1 = "Cluster.mgf"
+    filename2 = "ALL_GNPS_cleaned.mgf"
+    dico_smiles = None
+
+    if os.path.isfile(filename1) :
+        print("Parsing Cluster.mgf")
+        precursorname = "precursortype"
+        newdir = "cluster_molecules_test"
+        dico_smiles = parse_mgf(filename1, newdir, precursorname)
+    if os.path.isfile(filename2) :
+        print("Parsing ALL_GNPS_cleaned.mgf")
+        filename = "ALL_GNPS_cleaned.mgf"
+        precursorname = "adduct"
+        parse_mgf(filename2, newdir, precursorname, dico_smiles)
+
+    path_smilesfile = newdir + os.sep + "smiles.txt"
+    write_smiles_to_file(dico_smiles, path_smilesfile)
+    print("Fin du parsing")
+
+
+
 
 
 if __name__ == "__main__":

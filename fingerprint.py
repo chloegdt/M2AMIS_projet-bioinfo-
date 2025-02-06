@@ -1,6 +1,5 @@
 import os
 import logging
-import numpy as np
 
 from pyteomics import mgf
 from rdkit import Chem
@@ -17,7 +16,6 @@ FILES = [
     "energy_30.0_precursor_M+H.mgf",
     "energy_25.0_precursor_M+Na.mgf",
 ]
-
 
 def getSmiles(file_path):
     """
@@ -60,6 +58,7 @@ def tanimotoSimilarity(fingerprints):
             if i == j:
                 similarity_matrix[i, j] = 1
                 continue
+                
             fp_or = np.sum(np.bitwise_or(fingerprints[i], fingerprints[j]))
             fp_and = np.sum(np.bitwise_and(fingerprints[i], fingerprints[j]))
 

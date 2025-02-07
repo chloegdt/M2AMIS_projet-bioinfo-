@@ -1,127 +1,118 @@
 import os
-from matchms.importing import load_from_mgf
-import matchms.filtering as ms_filters
+import multiprocessing
+import logging
+from scipy.sparse import coo_matrix
 import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
+from pathlib import Path
+from matchms.importing import load_from_mgf
 from matchms import calculate_scores
+from matchms.filtering import normalize_intensities, select_by_intensity
 from matchms.Spectrum import Spectrum
 from matchms.similarity.BaseSimilarity import BaseSimilarity
 
+def assign_ids_to_spectra(spectres):
+    """
+    Assigne un identifiant unique à chaque spectre.
+    """
+    if not spectres:
+        logging.warning("Liste des spectres vide. Aucun ID assigné.")
+        return spectres
+
+    for idx, spectre in enumerate(spectres):
+        spectre.set("id", idx + 1)
+    return spectres
 
 class ManhattanSimilarity(BaseSimilarity):
     """
-    Fonction de calcul de la similarité Manhattan entre deux spectres.
+    Calcule la similarité Manhattan entre deux spectres.
     """
-    # Définir le type de données attendu pour les scores
     score_datatype = np.dtype([('score', 'f4'), ('matched_peaks', 'i4')])
 
     def pair(self, reference: Spectrum, query: Spectrum):
-        # similarité avec la même molécule
         if reference is query:
             return np.array((1.0, len(np.union1d(reference.peaks.mz, query.peaks.mz))), dtype=self.score_datatype)
         
-        # Aligner les spectres par m/z
         ref_mz, ref_intensities = reference.peaks.mz, reference.peaks.intensities
         query_mz, query_intensities = query.peaks.mz, query.peaks.intensities
-
-        # Créer un vecteur commun basé sur les m/z présents dans les deux spectres
         common_mz = np.union1d(ref_mz, query_mz)
-
-        # Interpolation des intensités sur les m/z alignés
         ref_interp = np.interp(common_mz, ref_mz, ref_intensities, left=0, right=0)
         query_interp = np.interp(common_mz, query_mz, query_intensities, left=0, right=0)
-
-        # Calcul de la distance Manhattan
         manhattan_distance = np.sum(np.abs(ref_interp - query_interp))
-        
-        # Calcul de la similarité inversée (valeur principale entre 0 et 1)
         similarity = 1 / (1 + manhattan_distance)
-        
-        # Calcul du nombre de pics communs
         matched_peaks = len(common_mz)
-        
-        # Retourner un tableau structuré compatible avec matchms
         return np.array((similarity, matched_peaks), dtype=self.score_datatype)
 
-
-def metadata_processing(spectrum):
+def process_spectrum(spectre, threshold=0.1):
     """
-    Filtrage et standardization des spectre.
+    Normalisation et filtrage un spectre.
     """
-    spectrum = ms_filters.default_filters(spectrum)
-    spectrum = ms_filters.repair_inchi_inchikey_smiles(spectrum)
-    spectrum = ms_filters.harmonize_undefined_smiles(spectrum)
-    spectrum = ms_filters.harmonize_undefined_inchi(spectrum)
-    spectrum = ms_filters.harmonize_undefined_inchikey(spectrum)
-    spectrum = ms_filters.add_precursor_mz(spectrum)
-    return spectrum
+    if spectre.peaks:
+        spectre = normalize_intensities(spectre)
+        spectre = select_by_intensity(spectre, intensity_from=threshold)
+    return spectre
 
-
-def peak_processing(spectrum):
+def save_scores(scores_data, output_file):
     """
-    Filtrage et normalisation des pics.
+    Sauvegarde les scores dans un fichier.
     """
-    spectrum = ms_filters.default_filters(spectrum)
-    spectrum = ms_filters.normalize_intensities(spectrum)
-    spectrum = ms_filters.select_by_intensity(spectrum, intensity_from=0.01)
-    spectrum = ms_filters.select_by_mz(spectrum, mz_from=10, mz_to=1000)
-    return spectrum
+    directory = os.path.dirname(output_file)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    rows = [item[0] for item in scores_data]
+    cols = [item[1] for item in scores_data]
+    scores = [item[2] for item in scores_data]
+    sparse_matrix = coo_matrix((scores, (rows, cols)))
+    with open(output_file, 'w') as f:
+        for i, j, v in zip(sparse_matrix.row, sparse_matrix.col, sparse_matrix.data):
+            f.write(f"{i+1} {j+1} {v}\n")
 
-
-def save_to_csv(scores, output_csv_path):
+def compute_manhattan_scores(spectres):
     """
-    Sauvegarde dans un fichier CSV.
+    Calcule la similarité Manhattan pour une liste de spectres.
     """
-    data = []
-    for (reference, query, score) in scores:
-        data.append({"reference": reference.metadata.get("title", reference.metadata.get("formula", "unknown")), # spectre principale
-                     "query": query.metadata.get("title", query.metadata.get("formula", "unknown")),  # spectre secondaire 
-                     "score": score, # score de la similarité et nombre de pics qui match
-                     })
+    similarity_measure = ManhattanSimilarity()
+    scores = calculate_scores(spectres, spectres, similarity_measure, is_symmetric=True)
+    scores_data = [(query.metadata.get("id") - 1, ref.metadata.get("id") - 1, score[0]) for query, ref, score in scores if query.metadata.get("id") <= ref.metadata.get("id")]
+    return scores_data
 
-    df_scores = pd.DataFrame(data)
-    df_scores.to_csv(output_csv_path, index=False)
+def process_file(file_path, output_directory):
+    """
+    Traite un fichier MGF et calcule les scores Manhattan.
+    """
+    logging.info(f"Traitement du fichier : {file_path}")
+    spectres = list(load_from_mgf(file_path))
+    if not spectres:
+        logging.error(f"Aucun spectre trouvé dans : {file_path}")
+        return
+    spectres = [process_spectrum(s) for s in spectres if s]
+    spectres = assign_ids_to_spectra(spectres)
+    scores_data = compute_manhattan_scores(spectres)
+    output_file = os.path.join(output_directory, f"{Path(file_path).stem}_manhattan_scores.txt")
+    save_scores(scores_data, output_file)
 
-    print(f"Manhattan similarity scores saved to {output_csv_path}")
-
-
-####### MAIN ########
-if __name__ == "__main__":
-    input_directory = "cluster_molecules_test"  # Répertoire contenant les fichiers .mgf
-    output_directory = "similarite_results"      # Répertoire pour sauvegarder les résultats
-
-    # Fichiers à ignorer
-    files_to_ignore = {"inexploitable.mgf", "no_energy.mgf", "no_smiles.mgf", "not_validated.mgf", "smiles.txt"}
-
-    # Créer le répertoire de sortie s'il n'existe pas
+def main(input_directory, output_directory):
+    """
+    Parcourt les fichiers d'un répertoire et applique la similarité Manhattan.
+    """
+    if not Path(input_directory).exists():
+        logging.error(f"Répertoire introuvable : {input_directory}")
+        return
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
+    files = [f for f in os.listdir(input_directory) if f.endswith(".mgf")]
+    if not files:
+        logging.error("Aucun fichier trouvé.")
+        return
+    with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
+        tasks = [(os.path.join(input_directory, file), output_directory) for file in files]
+        pool.starmap(process_file, tasks)
 
-    # Parcourir tous les fichiers .mgf dans le répertoire
-    for mgf_file in os.listdir(input_directory):
-        if mgf_file.endswith(".mgf") and mgf_file not in files_to_ignore:
-            input_file_path = os.path.join(input_directory, mgf_file)
-            output_csv_path = os.path.join(output_directory, f"{os.path.splitext(mgf_file)[0]}_manhattan_scores.csv")
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    input_directory = "cluster_molecules_test"
+    output_directory = "similarite_results"
+    main(input_directory, output_directory)
 
-            print(f"Processing file: {mgf_file}")
-
-            # Charger les spectres depuis le fichier .mgf
-            spectrums = list(load_from_mgf(input_file_path))
-
-            # Appliquer les traitements aux spectres
-            spectrums = [metadata_processing(s) for s in spectrums]
-            spectrums = [peak_processing(s) for s in spectrums]
-
-            # Calculer la similarité Manhattan
-            similarity_measure = ManhattanSimilarity()
-            scores = calculate_scores(spectrums, spectrums, similarity_measure, is_symmetric=True)
-
-            # Sauvegarder les scores dans un fichier CSV
-            save_to_csv(scores, output_csv_path)
-
-        else:
-            print(f"Skipping file: {mgf_file}")
 
 
 # # test sur un seul fichier 

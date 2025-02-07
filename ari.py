@@ -1,10 +1,18 @@
 import os
-import sys
 from sklearn.metrics import adjusted_rand_score
+
+# À modifier selon les besoins 
+BASE_DIR = os.getcwd()
+HDBSCAN_DIR = os.path.join(BASE_DIR, "resultats_clusters_hdbscan")
+MCL_DIR = os.path.join(BASE_DIR, "resultats_clusters_mcl")
+DATA_TYPES = ["spectre", "morgan", "groupefonct"]
+ENERGIES = ["10", "30", "50"]
+OUTPUT_FILE = "res_ari.txt"
+
 
 def read_clusters(file_path):
     """
-    Lit un fichier contenant les clusters et retourne un dictionnaire ID -> Cluster.
+    Lit un fichier contenant les clusters et retourne un dictionnaire ID -> Cluster
     """
     cluster_dict = {}
     with open(file_path, 'r') as f:
@@ -14,68 +22,144 @@ def read_clusters(file_path):
                 cluster_dict[item] = cluster_id
     return cluster_dict
 
+
 def compute_ari(file1, file2):
     """
-    Calcule l'ARI entre deux fichiers de clustering.
+    Calcule ARI  entre deux fichiers de clustering
     """
     clusters1 = read_clusters(file1)
     clusters2 = read_clusters(file2)
 
     common_ids = set(clusters1.keys()).intersection(set(clusters2.keys()))
     if not common_ids:
-        return None  # Aucun ID commun
+        return None  # Pas d'IDs communs
 
     labels1 = [clusters1[id] for id in common_ids]
     labels2 = [clusters2[id] for id in common_ids]
 
     return adjusted_rand_score(labels1, labels2)
 
+
 def main():
     """
-    Compare tous les fichiers de deux dossiers et enregistre les ARI calculés.
+    Parcourt les dossiers et compare tous les fichiers HDBSCAN vs MCL
     """
-    if len(sys.argv) != 4:
-        print("Utilisation : python ari.py <dossier1> <dossier2> <fichier_sortie>")
-        sys.exit(1)
-
-    dir1, dir2, output_file = sys.argv[1], sys.argv[2], sys.argv[3]
-
-    # Vérifie que ce sont bien des dossiers
-    if not (os.path.isdir(dir1) and os.path.isdir(dir2)):
-        print("Les deux premiers arguments doivent être des dossiers valides.")
-        sys.exit(1)
-
-    # Récupère les fichiers .txt des deux dossiers
-    files1 = {f for f in os.listdir(dir1) if f.endswith(".txt")}
-    files2 = {f for f in os.listdir(dir2) if f.endswith(".txt")}
-
-    # Intersection des fichiers présents dans les deux dossiers
-    common_files = files1.intersection(files2)
-
-    if not common_files:
-        print("Aucun fichier commun trouvé entre les deux dossiers.")
-        sys.exit(1)
+    base_dir = BASE_DIR
+    hdbscan_dir = HDBSCAN_DIR
+    mcl_dir = MCL_DIR
+    data_types = DATA_TYPES
+    energies = ENERGIES
 
     results = []
 
-    for filename in common_files:
-        file1 = os.path.join(dir1, filename)
-        file2 = os.path.join(dir2, filename)
 
-        print(f"Comparaison : {filename}")
-        ari_score = compute_ari(file1, file2)
+    for data_type in data_types:
+    # Comparaisons HDBSCAN vs HDBSCAN au sein du même type de données
+        for energy in energies:
+            file_hdbscan1 = os.path.join(hdbscan_dir, data_type, f"{data_type}_{energy}.txt")
+            for data_type_2 in data_types:
+                if data_type == data_type_2:  # Comparaison HDBSCAN vs HDBSCAN dans le même type
+                    file_hdbscan2 = os.path.join(hdbscan_dir, data_type_2, f"{data_type_2}_{energy}.txt")
+                    relative_hdbscan_path1 = os.path.relpath(file_hdbscan1, base_dir)
+                    relative_hdbscan_path2 = os.path.relpath(file_hdbscan2, base_dir)
+                    if os.path.exists(file_hdbscan1) and os.path.exists(file_hdbscan2):
+                        print(f"HDBSCAN{data_type} (Energy {energy}) vs HDBSCAN {data_type} (Energy {energy})")
+                        ari_score = compute_ari(file_hdbscan1, file_hdbscan2)
+                        if ari_score is not None:
+                            results.append(f"HDBSCAN {data_type} (Energy {energy}) vs HDBSCAN {data_type} (Énergie {energy}): ARI = {ari_score:.4f}")
+                        else:
+                            results.append(f"Comparaison HDBSCAN ({relative_hdbscan_path1}) vs ({relative_hdbscan_path2}) pour {data_type} (Énergie {energy}): AUCUN ID COMMUN")
 
-        if ari_score is not None:
-            results.append(f"{filename} : ARI = {ari_score:.4f}")
-        else:
-            results.append(f"{filename} : Aucun ID commun")
+    # Comparaisons MCL vs MCL au sein du même type de données
+    for energy in energies:
+        file_mcl1 = os.path.join(mcl_dir, data_type, f"{data_type}_{energy}.txt")
+        for data_type_2 in data_types:
+            if data_type == data_type_2:  # Comparaison MCL vs MCL dans le même type
+                file_mcl2 = os.path.join(mcl_dir, data_type_2, f"{data_type_2}_{energy}.txt")
+                relative_mcl_path1 = os.path.relpath(file_mcl1, base_dir)
+                relative_mcl_path2 = os.path.relpath(file_mcl2, base_dir)
+                if os.path.exists(file_mcl1) and os.path.exists(file_mcl2):
+                    print(f"Comparaison MCL dans le même type : {relative_mcl_path1} vs {relative_mcl_path2}")
+                    ari_score = compute_ari(file_mcl1, file_mcl2)
+                    if ari_score is not None:
+                        results.append(f"MCL {data_type} (Energy {energy}) vs MCL {data_type} (Énergie {energy}): ARI = {ari_score:.4f}")
+                    else:
+                        results.append(f"Comparaison MCL ({relative_mcl_path1}) vs ({relative_mcl_path2}) pour {data_type} (Énergie {energy}): AUCUN ID COMMUN")
 
-    # Sauvegarde des résultats dans un fichier
-    with open(output_file, "w") as f:
+    # Comparaisons HDBSCAN entre différents types de données
+    for energy in energies:
+        for data_type_1 in data_types:
+            for data_type_2 in data_types:
+                if data_type_1 != data_type_2:  # Comparaison entre types différents
+                    file_hdbscan1 = os.path.join(hdbscan_dir, data_type_1, f"{data_type_1}_{energy}.txt")
+                    file_hdbscan2 = os.path.join(hdbscan_dir, data_type_2, f"{data_type_2}_{energy}.txt")
+                    relative_hdbscan_path1 = os.path.relpath(file_hdbscan1, base_dir)
+                    relative_hdbscan_path2 = os.path.relpath(file_hdbscan2, base_dir)
+                    if os.path.exists(file_hdbscan1) and os.path.exists(file_hdbscan2):
+                        print(f"Comparaison HDBSCAN entre différents types : {relative_hdbscan_path1} vs {relative_hdbscan_path2}")
+                        ari_score = compute_ari(file_hdbscan1, file_hdbscan2)
+                        if ari_score is not None:
+                            results.append(f"HDBSCAN {data_type_1} (Énergie {energy}) vs HDBSCAN {data_type_2} (Énergie {energy}): ARI = {ari_score:.4f}")
+                        else:
+                            results.append(f"Comparaison HDBSCAN ({relative_hdbscan_path1}) vs ({relative_hdbscan_path2}) pour {data_type_1} vs {data_type_2} (Énergie {energy}): AUCUN ID COMMUN")
+
+    # Comparaisons MCL entre différents types de données
+    for energy in energies:
+        for data_type_1 in data_types:
+            for data_type_2 in data_types:
+                if data_type_1 != data_type_2:  # Comparaison entre types différents
+                    file_mcl1 = os.path.join(mcl_dir, data_type_1, f"{data_type_1}_{energy}.txt")
+                    file_mcl2 = os.path.join(mcl_dir, data_type_2, f"{data_type_2}_{energy}.txt")
+                    relative_mcl_path1 = os.path.relpath(file_mcl1, base_dir)
+                    relative_mcl_path2 = os.path.relpath(file_mcl2, base_dir)
+                    if os.path.exists(file_mcl1) and os.path.exists(file_mcl2):
+                        print(f"Comparaison MCL entre différents types : {relative_mcl_path1} vs {relative_mcl_path2}")
+                        ari_score = compute_ari(file_mcl1, file_mcl2)
+                        if ari_score is not None:
+                            results.append(f"MCL {data_type_1} (Énergie {energy}) vs MCL {data_type_2} (Énergie {energy}): ARI = {ari_score:.4f}")
+                        else:
+                            results.append(f"Comparaison MCL ({relative_mcl_path1}) vs ({relative_mcl_path2}) pour {data_type_1} vs {data_type_2} (Énergie {energy}): AUCUN ID COMMUN")
+
+    # Comparaisons HDBSCAN (même type) vs MCL (même type)
+    for energy in energies:
+        for data_type_1 in data_types:
+            file_hdbscan = os.path.join(hdbscan_dir, data_type_1, f"{data_type_1}_{energy}.txt")
+            file_mcl = os.path.join(mcl_dir, data_type_1, f"{data_type_1}_{energy}.txt")
+            relative_hdbscan_path = os.path.relpath(file_hdbscan, base_dir)
+            relative_mcl_path = os.path.relpath(file_mcl, base_dir)
+            if os.path.exists(file_hdbscan) and os.path.exists(file_mcl):
+                print(f"Comparaison HDBSCAN vs MCL pour le même type : {relative_hdbscan_path} vs {relative_mcl_path}")
+                ari_score = compute_ari(file_hdbscan, file_mcl)
+                if ari_score is not None:
+                    results.append(f"HDBSCAN {data_type_1} (Énergie {energy}) vs MCL {data_type_1} (Énergie {energy}): ARI = {ari_score:.4f}")
+                else:
+                    results.append(f"Comparaison HDBSCAN ({relative_hdbscan_path}) vs MCL ({relative_mcl_path}) pour {data_type_1} (Énergie {energy}): AUCUN ID COMMUN")
+
+    # Comparaisons HDBSCAN (différents types) vs MCL (différents types)
+    for energy in energies:
+        for data_type_1 in data_types:
+            for data_type_2 in data_types:
+                if data_type_1 != data_type_2:  # Comparaison HDBSCAN (différents types) vs MCL (différents types)
+                    file_hdbscan = os.path.join(hdbscan_dir, data_type_1, f"{data_type_1}_{energy}.txt")
+                    file_mcl = os.path.join(mcl_dir, data_type_2, f"{data_type_2}_{energy}.txt")
+                    relative_hdbscan_path = os.path.relpath(file_hdbscan, base_dir)
+                    relative_mcl_path = os.path.relpath(file_mcl, base_dir)
+                    if os.path.exists(file_hdbscan) and os.path.exists(file_mcl):
+                        print(f"HDBSCAN {data_type_1} (Énergie {energy}) vs MCL {data_type_2} (Énergie {energy})")
+                        ari_score = compute_ari(file_hdbscan, file_mcl)
+                        if ari_score is not None:
+                            results.append(f"HDBSCAN {data_type_1} (Énergie {energy}) vs MCL {data_type_2} (Énergie {energy}): ARI = {ari_score:.4f}")
+                        else:
+                            results.append(f"Comparaison HDBSCAN ({relative_hdbscan_path}) vs MCL ({relative_mcl_path}) pour {data_type_1} vs {data_type_2} (Énergie {energy}): AUCUN ID COMMUN")
+
+
+
+    # Sauvegarde des résultats
+    with open(OUTPUT_FILE, "w") as f:
         for line in results:
             f.write(line + "\n")
 
-    print(f"Comparaisons terminées ! Résultats enregistrés dans {output_file}.")
+    print(f"Comparaisons terminées ! Résultats enregistrés dans {OUTPUT_FILE}.")
 
 if __name__ == "__main__":
     main()

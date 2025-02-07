@@ -5,3 +5,6 @@ projet-bioinfo/
 ALL_GNPS_cleaned.mgf
 Cluster.mgf
 common_clusters.html
+__pycache__
+.DS_Store
+.gitignore

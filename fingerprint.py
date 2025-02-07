@@ -107,6 +107,11 @@ def createEveryMatrix(file_path, directory_path):
 
 
 def main(files):
+    """
+    Fonction principale pour calculer et sauvegarder (en fichier txt) les matrices de similarité des fichiers spécifiés en entrée.
+
+    @param files: Liste contenant les nom des fichiers à traiter.
+    """
     smiles_dict = create_dict_from_smiles(FILENAME)
     smiles = [smiles_dict.get(file) for file in files]
     logging.info(f"Début du calcul des similarités fingerprints des SMILES.")

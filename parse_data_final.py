@@ -1,10 +1,16 @@
 import re 
 import os
 import shutil
+import logging
 from rdkit import Chem
 from pyteomics import mgf
 
-fields_to_remove = ["charge", "ontology", "ionmode", "instrumenttype", "instrument", "manufacturer", "ms_mass_analyzer", "ms_ionisation", "ms_dissociation_method", "scans"]
+fields_to_remove = [
+    "charge", "ontology", "ionmode", "instrumenttype",
+    "instrument", "manufacturer", "ms_mass_analyzer",
+    "ms_ionisation", "ms_dissociation_method", "scans",
+]
+
 
 def extract_collision_energy(params):
     """
@@ -22,8 +28,11 @@ def extract_collision_energy(params):
     #we check if the collision energy is in the compound name
     compound_name = params.get('compound_name').lower()
     match = re.search(r'collisionenergy[:\s]*([\d]+)', compound_name, re.IGNORECASE)
-    if match: return match.group(1)
-    else: return None
+    if match:
+        return match.group(1)
+    else: 
+        return None
+
 
 def precurseur_correction(precursor):
     """
@@ -58,7 +67,7 @@ def canonisation_smiles(smiles):
         else:
             return None
     except Exception as e:
-        print(f"Error canonizing SMILES {smiles}: {e}")
+        logging.warning(f"Error canonizing SMILES {smiles}: {e}")
         return None
 
 
@@ -178,7 +187,7 @@ def write_smiles_to_file(dico_smiles, smiles_file):
 
 def create_dict_from_smiles(file_path):
     """
-     Creates a dictionary from a text file where lines starting with 'energy_' are used as keys,
+    Creates a dictionary from a text file where lines starting with 'energy_' are used as keys,
     and the subsequent lines (SMILES) are stored as values in a list.
 
     @param file_path: Path to the text file containing the data.
@@ -204,46 +213,49 @@ def create_dict_from_smiles(file_path):
 
 def main():
     """
-     Execute the parsing of files Cluster.mgf and ALL_GNPS. Only existing files will
-     be parsed.
+    Execute the parsing of files Cluster.mgf and ALL_GNPS. Only existing files will be parsed.
     """
 
     filename1 = "Cluster.mgf"
     filename2 = "ALL_GNPS_cleaned.mgf"
+    newdir = "cluster_molecules"
     dico_smiles = None
 
-    if os.path.isfile(filename1) :
-        print("Parsing Cluster.mgf")
+    if os.path.isfile(filename1):
+        logging.info("Parsing Cluster.mgf")
         precursorname = "precursortype"
-        newdir = "cluster_molecules_test"
         dico_smiles = parse_mgf(filename1, newdir, precursorname)
-    if os.path.isfile(filename2) :
-        print("Parsing ALL_GNPS_cleaned.mgf")
-        filename = "ALL_GNPS_cleaned.mgf"
+    else:
+        logging.warning(f"Le fichier {filename1} n'a pas été trouvé.")
+
+    if os.path.isfile(filename2):
+        logging.info("Parsing ALL_GNPS_cleaned.mgf")
         precursorname = "adduct"
         parse_mgf(filename2, newdir, precursorname, dico_smiles)
+    else:
+        logging.warning(f"Le fichier {filename2} n'a pas été trouvé.")
 
     path_smilesfile = newdir + os.sep + "smiles.txt"
     write_smiles_to_file(dico_smiles, path_smilesfile)
-    print("Fin du parsing")
-
-
+    logging.info("Fin du parsing.")
 
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
     filename = "Cluster.mgf"
     precursorname = "precursortype"
-    newdir = "cluster_molecules_test"
+    newdir = "cluster_molecules"
     fields_to_remove = ["charge", "ontology", "ionmode", "instrumenttype", "instrument", "manufacturer", "ms_mass_analyzer", "ms_ionisation", "ms_dissociation_method", "scans"]
     # the precursor fields in cluster.mgf and all_gnps do not have the same name
-    if filename == "Cluster.mgf" or filename == "mol.mgf": precursorname = "precursortype"
-    else: precursorname = "adduct"
+    if filename == "Cluster.mgf" or filename == "mol.mgf":
+        precursorname = "precursortype"
+    else:
+        precursorname = "adduct"
     dico_smiles = parse_mgf(filename, newdir)
     filename = "ALL_GNPS_cleaned.mgf"
     precursorname = "adduct"
     parse_mgf(filename, newdir, dico_smiles)
     path_smilesfile = newdir + os.sep + "smiles.txt"
     write_smiles_to_file(dico_smiles, path_smilesfile)
-

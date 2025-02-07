@@ -68,7 +68,7 @@ def assign_ids_to_spectra(spectres):
     # ajoute un id unique dans les métadonnées du spectre
     for idx, spectre in enumerate(spectres):
         spectre.set("id", idx + 1)
-        logging.info(f"ID assigné : {spectre.metadata.get('id')}")
+        # logging.info(f"ID assigné : {spectre.metadata.get('id')}")
     return spectres
 
 
@@ -175,7 +175,7 @@ def process_scores(n, score):
         ref_id = ref.metadata.get("id", "Unknown") - 1
 
         if query_id <= ref_id:
-            logging.info(f"Spectres comparés : {query_id} et {ref_id}")
+            # logging.info(f"Spectres comparés : {query_id} et {ref_id}")
             scores_data.append({
                 "Ref_id": ref_id,
                 "Query_id": query_id,
@@ -208,6 +208,13 @@ def calculate(spectres, output_file="output.txt", tolerance=0.01):
 
 
 def process_file(file_path, directory_path, tolerance=0.01):
+    """
+    Calcule et sauvegarde la similarité cosinus entre les spectres d'un fichier.
+
+    @param file_path: Fichier MGF des spectres à comparer.
+    @param directory_path: Répertoire utilisé pour la sauvegarde.
+    @param tolerance : Tolérance utilisée dans le calcul.
+    """
     logging.info(f"Traitement du fichier : {file_path}")
     
     fichier = list(load_from_mgf(file_path))
@@ -273,15 +280,13 @@ def main_selected_files(directory_path, selected_files, tolerance=0.01):
         return
 
     logging.info(f"Début du calcul des similarités cosinus des spectres.")
-    with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
-        tasks = [(os.path.join(directory_path, file), directory_path, tolerance) for file in files]
-        pool.starmap(process_file, tasks)
+    for file in files:
+        process_file(os.path.join(directory_path, file), directory_path, tolerance)
     logging.info(f"Calcul des similarités cosinus des spectres terminé.")
 
 
 
 if __name__ == "__main__":
-
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     directory_path = "cluster_molecules"
     main(directory_path)

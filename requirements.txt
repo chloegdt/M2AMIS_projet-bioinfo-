@@ -1,10 +1,14 @@
 rdkit
 pyteomics
 pandas
-macthms
+matchms
 scikit-learn
 pyvis
 umap-learn
 dbscan
 hdbscan
 mcl
+scipy
+numpy
+matplotlib
+networkx

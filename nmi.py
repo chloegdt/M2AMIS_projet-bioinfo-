@@ -1,6 +1,14 @@
 import os
 from sklearn.metrics import normalized_mutual_info_score
 
+# à modifier selon les besoins
+BASE_DIR = os.getcwd()
+HDBSCAN_DIR = os.path.join(BASE_DIR, "resultats_clusters_hdbscan")
+MCL_DIR = os.path.join(BASE_DIR, "resultats_clusters_mcl")
+DATA_TYPES = ["spectres", "smiles", "groupefonct"]
+ENERGIES = ["10", "30", "50"]
+OUTPUT_FILE = "res_nmi.txt"
+
 def read_clusters(file_path):
     """
     Lit un fichier contenant les clusters et retourne un dictionnaire ID -> Cluster
@@ -32,34 +40,33 @@ def compute_nmi(file1, file2):
 
 def main():
     """
-    Parcourt les dossiers et compare tous les fichiers DBSCAN vs MCL
+    Parcourt les dossiers et compare tous les fichiers HDBSCAN vs MCL
     """
-    base_dir = os.getcwd()
-    dbscan_dir = os.path.join(base_dir, "resultats_clusters_dbscan")
-    mcl_dir = os.path.join(base_dir, "resultats_clusters_mcl")
+    base_dir = BASE_DIR
+    hdbscan_dir = HDBSCAN_DIR
+    mcl_dir = MCL_DIR
 
-    data_types = ["spectres", "smiles", "descriptors"]
-    energies = ["10", "30", "50"]
-
+    data_types = DATA_TYPES
+    energies = ENERGIES
     results = []
 
 
     for data_type in data_types:
-    # Comparaisons DBSCAN vs DBSCAN au sein du même type de données
+    # Comparaisons HDBSCAN vs HDBSCAN au sein du même type de données
         for energy in energies:
-            file_dbscan1 = os.path.join(dbscan_dir, data_type, f"{data_type}_{energy}.txt")
+            file_hdbscan1 = os.path.join(hdbscan_dir, data_type, f"{data_type}_{energy}.txt")
             for data_type_2 in data_types:
-                if data_type == data_type_2:  # Comparaison DBSCAN vs DBSCAN dans le même type
-                    file_dbscan2 = os.path.join(dbscan_dir, data_type_2, f"{data_type_2}_{energy}.txt")
-                    relative_dbscan_path1 = os.path.relpath(file_dbscan1, base_dir)
-                    relative_dbscan_path2 = os.path.relpath(file_dbscan2, base_dir)
-                    if os.path.exists(file_dbscan1) and os.path.exists(file_dbscan2):
-                        print(f"DBSCAN{data_type} (Energy {energy}) vs DBSCAN {data_type} (Energy {energy})")
-                        nmi_score = compute_nmi(file_dbscan1, file_dbscan2)
+                if data_type == data_type_2:  # Comparaison HDBSCAN vs HDBSCAN dans le même type
+                    file_hdbscan2 = os.path.join(hdbscan_dir, data_type_2, f"{data_type_2}_{energy}.txt")
+                    relative_hdbscan_path1 = os.path.relpath(file_hdbscan1, base_dir)
+                    relative_hdbscan_path2 = os.path.relpath(file_hdbscan2, base_dir)
+                    if os.path.exists(file_hdbscan1) and os.path.exists(file_hdbscan2):
+                        print(f"HDBSCAN{data_type} (Energy {energy}) vs HDBSCAN {data_type} (Energy {energy})")
+                        nmi_score = compute_nmi(file_hdbscan1, file_hdbscan2)
                         if nmi_score is not None:
-                            results.append(f"DBSCAN {data_type} (Energy {energy}) vs DBSCAN {data_type} (Énergie {energy}): NMI = {nmi_score:.4f}")
+                            results.append(f"HDBSCAN {data_type} (Energy {energy}) vs HDBSCAN {data_type} (Énergie {energy}): NMI = {nmi_score:.4f}")
                         else:
-                            results.append(f"Comparaison DBSCAN ({relative_dbscan_path1}) vs ({relative_dbscan_path2}) pour {data_type} (Énergie {energy}): AUCUN ID COMMUN")
+                            results.append(f"Comparaison HDBSCAN ({relative_hdbscan_path1}) vs ({relative_hdbscan_path2}) pour {data_type} (Énergie {energy}): AUCUN ID COMMUN")
 
     # Comparaisons MCL vs MCL au sein du même type de données
     for energy in energies:
@@ -77,22 +84,22 @@ def main():
                     else:
                         results.append(f"Comparaison MCL ({relative_mcl_path1}) vs ({relative_mcl_path2}) pour {data_type} (Énergie {energy}): AUCUN ID COMMUN")
 
-    # Comparaisons DBSCAN entre différents types de données
+    # Comparaisons HDBSCAN entre différents types de données
     for energy in energies:
         for data_type_1 in data_types:
             for data_type_2 in data_types:
                 if data_type_1 != data_type_2:  # Comparaison entre types différents
-                    file_dbscan1 = os.path.join(dbscan_dir, data_type_1, f"{data_type_1}_{energy}.txt")
-                    file_dbscan2 = os.path.join(dbscan_dir, data_type_2, f"{data_type_2}_{energy}.txt")
-                    relative_dbscan_path1 = os.path.relpath(file_dbscan1, base_dir)
-                    relative_dbscan_path2 = os.path.relpath(file_dbscan2, base_dir)
-                    if os.path.exists(file_dbscan1) and os.path.exists(file_dbscan2):
-                        print(f"Comparaison DBSCAN entre différents types : {relative_dbscan_path1} vs {relative_dbscan_path2}")
-                        nmi_score = compute_nmi(file_dbscan1, file_dbscan2)
+                    file_hdbscan1 = os.path.join(hdbscan_dir, data_type_1, f"{data_type_1}_{energy}.txt")
+                    file_hdbscan2 = os.path.join(hdbscan_dir, data_type_2, f"{data_type_2}_{energy}.txt")
+                    relative_hdbscan_path1 = os.path.relpath(file_hdbscan1, base_dir)
+                    relative_hdbscan_path2 = os.path.relpath(file_hdbscan2, base_dir)
+                    if os.path.exists(file_hdbscan1) and os.path.exists(file_hdbscan2):
+                        print(f"Comparaison HDBSCAN entre différents types : {relative_hdbscan_path1} vs {relative_hdbscan_path2}")
+                        nmi_score = compute_nmi(file_hdbscan1, file_hdbscan2)
                         if nmi_score is not None:
-                            results.append(f"DBSCAN {data_type_1} (Énergie {energy}) vs DBSCAN {data_type_2} (Énergie {energy}): NMI = {nmi_score:.4f}")
+                            results.append(f"HDBSCAN {data_type_1} (Énergie {energy}) vs HDBSCAN {data_type_2} (Énergie {energy}): NMI = {nmi_score:.4f}")
                         else:
-                            results.append(f"Comparaison DBSCAN ({relative_dbscan_path1}) vs ({relative_dbscan_path2}) pour {data_type_1} vs {data_type_2} (Énergie {energy}): AUCUN ID COMMUN")
+                            results.append(f"Comparaison HDBSCAN ({relative_hdbscan_path1}) vs ({relative_hdbscan_path2}) pour {data_type_1} vs {data_type_2} (Énergie {energy}): AUCUN ID COMMUN")
 
     # Comparaisons MCL entre différents types de données
     for energy in energies:
@@ -111,46 +118,46 @@ def main():
                         else:
                             results.append(f"Comparaison MCL ({relative_mcl_path1}) vs ({relative_mcl_path2}) pour {data_type_1} vs {data_type_2} (Énergie {energy}): AUCUN ID COMMUN")
 
-    # Comparaisons DBSCAN (même type) vs MCL (même type)
+    # Comparaisons HDBSCAN (même type) vs MCL (même type)
     for energy in energies:
         for data_type_1 in data_types:
-            file_dbscan = os.path.join(dbscan_dir, data_type_1, f"{data_type_1}_{energy}.txt")
+            file_hdbscan = os.path.join(hdbscan_dir, data_type_1, f"{data_type_1}_{energy}.txt")
             file_mcl = os.path.join(mcl_dir, data_type_1, f"{data_type_1}_{energy}.txt")
-            relative_dbscan_path = os.path.relpath(file_dbscan, base_dir)
+            relative_hdbscan_path = os.path.relpath(file_hdbscan, base_dir)
             relative_mcl_path = os.path.relpath(file_mcl, base_dir)
-            if os.path.exists(file_dbscan) and os.path.exists(file_mcl):
-                print(f"Comparaison DBSCAN vs MCL pour le même type : {relative_dbscan_path} vs {relative_mcl_path}")
-                nmi_score = compute_nmi(file_dbscan, file_mcl)
+            if os.path.exists(file_hdbscan) and os.path.exists(file_mcl):
+                print(f"Comparaison HDBSCAN vs MCL pour le même type : {relative_hdbscan_path} vs {relative_mcl_path}")
+                nmi_score = compute_nmi(file_hdbscan, file_mcl)
                 if nmi_score is not None:
-                    results.append(f"DBSCAN {data_type_1} (Énergie {energy}) vs MCL {data_type_1} (Énergie {energy}): NMI = {nmi_score:.4f}")
+                    results.append(f"HDBSCAN {data_type_1} (Énergie {energy}) vs MCL {data_type_1} (Énergie {energy}): NMI = {nmi_score:.4f}")
                 else:
-                    results.append(f"Comparaison DBSCAN ({relative_dbscan_path}) vs MCL ({relative_mcl_path}) pour {data_type_1} (Énergie {energy}): AUCUN ID COMMUN")
+                    results.append(f"Comparaison HDBSCAN ({relative_hdbscan_path}) vs MCL ({relative_mcl_path}) pour {data_type_1} (Énergie {energy}): AUCUN ID COMMUN")
 
-    # Comparaisons DBSCAN (différents types) vs MCL (différents types)
+    # Comparaisons HDBSCAN (différents types) vs MCL (différents types)
     for energy in energies:
         for data_type_1 in data_types:
             for data_type_2 in data_types:
-                if data_type_1 != data_type_2:  # Comparaison DBSCAN (différents types) vs MCL (différents types)
-                    file_dbscan = os.path.join(dbscan_dir, data_type_1, f"{data_type_1}_{energy}.txt")
+                if data_type_1 != data_type_2:  # Comparaison HDBSCAN (différents types) vs MCL (différents types)
+                    file_hdbscan = os.path.join(hdbscan_dir, data_type_1, f"{data_type_1}_{energy}.txt")
                     file_mcl = os.path.join(mcl_dir, data_type_2, f"{data_type_2}_{energy}.txt")
-                    relative_dbscan_path = os.path.relpath(file_dbscan, base_dir)
+                    relative_hdbscan_path = os.path.relpath(file_hdbscan, base_dir)
                     relative_mcl_path = os.path.relpath(file_mcl, base_dir)
-                    if os.path.exists(file_dbscan) and os.path.exists(file_mcl):
-                        print(f"DBSCAN {data_type_1} (Énergie {energy}) vs MCL {data_type_2} (Énergie {energy})")
-                        nmi_score = compute_nmi(file_dbscan, file_mcl)
+                    if os.path.exists(file_hdbscan) and os.path.exists(file_mcl):
+                        print(f"HDBSCAN {data_type_1} (Énergie {energy}) vs MCL {data_type_2} (Énergie {energy})")
+                        nmi_score = compute_nmi(file_hdbscan, file_mcl)
                         if nmi_score is not None:
-                            results.append(f"DBSCAN {data_type_1} (Énergie {energy}) vs MCL {data_type_2} (Énergie {energy}): NMI = {nmi_score:.4f}")
+                            results.append(f"HDBSCAN {data_type_1} (Énergie {energy}) vs MCL {data_type_2} (Énergie {energy}): NMI = {nmi_score:.4f}")
                         else:
-                            results.append(f"Comparaison DBSCAN ({relative_dbscan_path}) vs MCL ({relative_mcl_path}) pour {data_type_1} vs {data_type_2} (Énergie {energy}): AUCUN ID COMMUN")
+                            results.append(f"Comparaison HDBSCAN ({relative_hdbscan_path}) vs MCL ({relative_mcl_path}) pour {data_type_1} vs {data_type_2} (Énergie {energy}): AUCUN ID COMMUN")
 
 
 
     # Sauvegarde des résultats
-    with open("resultats_nmi.txt", "w") as f:
+    with open(OUTPUT_FILE, "w") as f:
         for line in results:
             f.write(line + "\n")
 
-    print("Comparaisons terminées ! Résultats enregistrés dans 'resultats_nmi.txt'.")
+    print(f"Comparaisons terminées ! Résultats enregistrés dans {OUTPUT_FILE}.")
 
 if __name__ == "__main__":
     main()

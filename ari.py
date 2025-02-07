@@ -5,7 +5,7 @@ from sklearn.metrics import adjusted_rand_score
 BASE_DIR = os.getcwd()
 HDBSCAN_DIR = os.path.join(BASE_DIR, "resultats_clusters_hdbscan")
 MCL_DIR = os.path.join(BASE_DIR, "resultats_clusters_mcl")
-DATA_TYPES = ["spectre", "morgan", "groupefonct"]
+DATA_TYPES = ["spectre", "smiles", "groupefonct"]
 ENERGIES = ["10", "30", "50"]
 OUTPUT_FILE = "res_ari.txt"
 

@@ -21,11 +21,7 @@ FILES = [
 ]
 
 MAPPING = {
-    #"fingerprints": fingerprint.main,
-    #"fg": fingerprint.main,
-    #"functionnal": functionnal_group.main,
-    #"groups": functionnal_group.main,
-    #"dbscan": dbscan_hdbscan.main,
+    "visualisation",
     "similarite",
     "mcl",
     "parse"
@@ -68,6 +64,17 @@ def check_files():
             parse_data_final.main()
             break
 
+def check_chosen_files(parser):
+    count = 0
+    for file in FILES :
+        file = "cluster_molecules/" + file 
+        if os.path.isfile(file) :
+            count += 1
+    
+    if count == 0:
+        print("Il faut que au moins 1 des 5 fichiers soit présent après le parsing.")
+        parser.print_help()
+        sys.exit(0)
 
 def main():
     parser = get_parser()
@@ -86,16 +93,7 @@ def main():
         parser.print_help()
         sys.exit(0)
 
-    count = 0
-    for file in FILES :
-        file = "cluster_molecules/" + file 
-        if os.path.isfile(file) :
-            count += 1
     
-    if count == 0:
-        print("Il faut que au moins 1 des 5 fichiers soit présent après le parsing.")
-        parser.print_help()
-        sys.exit(0)
 
     if command == "parse" :
         check_files()
@@ -110,6 +108,7 @@ def main():
                 print("Error: Path does not exist.")
                 sys.exit(1)
         else:
+            check_chosen_files(parser)
             print("Pas de path fournis. Nous utilisons des fichiers choisis.")
             print("Si vous voulez utilisez d'autres fichiers : \nmain.py similarite -p/--path PATH")
             directory_path = "cluster_molecules"
@@ -120,6 +119,9 @@ def main():
         outputdir = "cluster_molecules/clusters_spectres_cosinus"
         markov_clustering_micans.clustering(inputdir, outputdir, "1.1")
         
+    elif command == "visualisation" :
+        print()
+
     else:
         parser.error(f"Code inconnu: {command}. Utilisez 'help' pour voir les options disponibles.")
 

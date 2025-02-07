@@ -1,0 +1,10 @@
+rdkit
+pyteomics
+pandas
+macthms
+scikit-learn
+pyvis
+umap-learn
+dbscan
+hdbscan
+mcl

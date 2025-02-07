@@ -3,6 +3,7 @@ import sys
 import logging
 import argparse
 import pathlib
+from pathlib import Path
 
 import parse_data_final
 import cosinus
@@ -15,7 +16,8 @@ FILES = [
     #"energy_50.0_precursor_M+H.mgf",
     #"energy_10.0_precursor_M+H.mgf",
     #"energy_30.0_precursor_M+H.mgf",
-    "energy_25.0_precursor_M+Na.mgf",
+    "energy_37.0_precursor_M+Na.mgf",
+    "energy_25.0_precursor_M+Na.mgf"
 ]
 
 MAPPING = {
@@ -33,7 +35,7 @@ MAPPING = {
 def get_parser():
 
     parser = argparse.ArgumentParser(
-        description="Clustering of Spectrum and Smiles",
+        description="Clustering of Spectrum and Smiles\nFichiers nécessaire :\nCluster.mgf et/ou ALL_GNPS_cleaned.mgf ",
         epilog="Commandes disponibles :\n"
                     "parse        - Vérifie et analyse les fichiers d'entrée.\n"
                     "similarite   - Calcule la similarité cosinus entre les spectres\n"
@@ -78,19 +80,41 @@ def main():
     
     command = args.command.lower()
 
+    filename1 = "Cluster.mgf"
+    filename2 = "ALL_GNPS_cleaned.mgf"
+    if not os.path.isfile(filename1) and not os.path.isfile(filename2):
+        print("ERRUER : aucun fichier mgf trouvé (Cluster.mgf et/ou ALL_GNPS_cleaned.mgf).")
+        parser.print_help()
+        sys.exit(0)
+
     if command == "parse" :
         check_files()
 
     elif command == "similarite" :
         if args.path:
             print(f"Path provided: {args.path.resolve()}")
+            directory_path = args.path
+            print(directory_path)
+            cosinus.main_selected_files(directory_path, FILES)
             if not args.path.exists():
                 print("Error: Path does not exist.")
                 sys.exit(1)
         else:
             print("No path provided. Using preconfigured files.")
-            print("If you want to use a directory : \nrequired : main.py similarite -p, --path PATH")
-            directory_path = "cluster_molecules_chosen"
+            print("If you want to use a directory : \nmain.py similarite -p/--path PATH")
+
+            for file in FILES :
+                filename = file
+
+            project_dir = Path.cwd()
+            for path in project_dir.rglob(filename):
+                directory_path = path.parent
+                print("File found in:", path.parent)
+                break
+
+            if not directory_path.exists():
+                print("FILES introuvables.")
+                sys.exit(0)
             cosinus.main_selected_files(directory_path, FILES)
 
         
@@ -99,5 +123,5 @@ def main():
 
 
 if __name__ == "__main__":
-    #logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     main()

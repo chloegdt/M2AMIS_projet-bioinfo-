@@ -99,7 +99,7 @@ def main(input_directory, output_directory):
         return
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
-    files = [f for f in os.listdir(input_directory) if f.endswith(".mgf")]
+    files = [f for f in os.listdir(input_directory) if f.startswith("energy") and f.endswith(".mgf")]
     if not files:
         logging.error("Aucun fichier trouvé.")
         return

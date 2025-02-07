@@ -8,3 +8,5 @@ common_clusters.html
 __pycache__
 .DS_Store
 .gitignore
+energy_25.0_precursor_M+Na.mgf
+energy_37.0_precursor_M+Na.mgf

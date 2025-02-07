@@ -27,8 +27,7 @@ MAPPING = {
     #"groups": functionnal_group.main,
     #"dbscan": dbscan_hdbscan.main,
     "similarite",
-    #"markov": markov_clustering_micans.main,
-    #"mcl": markov_clustering_micans.main,
+    "mcl",
     "parse"
 }
 
@@ -87,6 +86,17 @@ def main():
         parser.print_help()
         sys.exit(0)
 
+    count = 0
+    for file in FILES :
+        file = "cluster_molecules/" + file 
+        if os.path.isfile(file) :
+            count += 1
+    
+    if count == 0:
+        print("Il faut que au moins 1 des 5 fichiers soit présent après le parsing.")
+        parser.print_help()
+        sys.exit(0)
+
     if command == "parse" :
         check_files()
 
@@ -95,28 +105,20 @@ def main():
             print(f"Path provided: {args.path.resolve()}")
             directory_path = args.path
             print(directory_path)
-            cosinus.main_selected_files(directory_path, FILES)
+            cosinus.main(directory_path)
             if not args.path.exists():
                 print("Error: Path does not exist.")
                 sys.exit(1)
         else:
-            print("No path provided. Using preconfigured files.")
-            print("If you want to use a directory : \nmain.py similarite -p/--path PATH")
-
-            for file in FILES :
-                filename = file
-
-            project_dir = Path.cwd()
-            for path in project_dir.rglob(filename):
-                directory_path = path.parent
-                print("File found in:", path.parent)
-                break
-
-            if not directory_path.exists():
-                print("FILES introuvables.")
-                sys.exit(0)
+            print("Pas de path fournis. Nous utilisons des fichiers choisis.")
+            print("Si vous voulez utilisez d'autres fichiers : \nmain.py similarite -p/--path PATH")
+            directory_path = "cluster_molecules"
             cosinus.main_selected_files(directory_path, FILES)
-
+    
+    elif command == "mcl" :
+        inputdir = "cluster_molecules/resultats_cosinus_spectres"
+        outputdir = "cluster_molecules/clusters_spectres_cosinus"
+        markov_clustering_micans.clustering(inputdir, outputdir, "1.1")
         
     else:
         parser.error(f"Code inconnu: {command}. Utilisez 'help' pour voir les options disponibles.")

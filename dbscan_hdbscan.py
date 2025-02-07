@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import umap
 
 # à modifier 
-FILE = "spectre50.txt"
+FILE = "cluster_molecules_chosen/resultats_cosinus_spectres/energy_25.0_precursor_M+Na.txt"
 OUTPUT = "res_spectre50.txt"
 
 

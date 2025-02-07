@@ -61,7 +61,7 @@ def plot_common_clusters(common_clusters, output_file="common_clusters.html"):
         print("⚠️ No common molecules found between clusters!")
         return
     
-    net = Network(notebook=False, height="1000px", width="100%", bgcolor="black", font_color="white")
+    net = Network(notebook=False, height="1000px", width="100%", bgcolor="white", font_color="white")
     
     for node, attrs in G.nodes(data=True):
         net.add_node(node, label=node, color=attrs.get("color", "gray"), size=attrs.get("size", 10))

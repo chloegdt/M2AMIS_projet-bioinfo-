@@ -15,6 +15,9 @@ from matchms.filtering import normalize_intensities
 from matchms.filtering import select_by_intensity
 from matchms import Spectrum
 
+INPUT_DIRECTORY = "cluster_molecules/"
+SAVE_DIRECTORY = "cluster_molecules/resultats_cosinus_spectres/"
+
 
 def get_mz_values(spectres):
     """
@@ -261,7 +264,7 @@ def main(directory_path, tolerance=0.01):
         
 
 
-def main_selected_files(directory_path, selected_files, tolerance=0.01):
+def main_selected_files(selected_files, directory_path=INPUT_DIRECTORY, tolerance=0.01):
     """
     Fonction principale pour traiter uniquement les fichiers spécifiés.
     

@@ -16,7 +16,6 @@ warnings.filterwarnings("ignore", category=UserWarning, module="umap")
 
 # à modifier 
 FILE = "cluster_molecules/resultats_fingerprints/energy_37.0_precursor_M+Na.txt"
-OUTPUT = "z_temp.txt"
 
 
 class DensityClustering:
@@ -102,9 +101,11 @@ class DensityClustering:
             reducer = umap.UMAP(n_components=2, metric='precomputed', random_state=42)
             umap_embedding = reducer.fit_transform(self.distance_matrix)
             self.labels = clusterer.fit_predict(umap_embedding)
+        else:
+            self.labels = clusterer.fit_predict(self.distance_matrix)
 
-        print("Labels de clusters :")
-        print(np.unique(self.labels, return_counts=True))
+        # print("Labels de clusters :")
+        # print(np.unique(self.labels, return_counts=True))
         n_clusters = len(set(self.labels)) - (1 if -1 in self.labels else 0)
         print(f"Nombre de clusters détectés : {n_clusters}")
         return self.labels
@@ -144,6 +145,7 @@ class DensityClustering:
         with open(output_file, 'w') as f:
             for cluster_id, ids in clusters_dict.items():
                 f.write("\t".join(map(str, ids)) + "\n")
+        logging.info(f"Clustering sauvegardé dans le fichier : {output_file}")
 
 
 
@@ -168,11 +170,17 @@ def clustering_hdbscan(files, input_directory, output_directory, reduction=True)
         logging.info(f"Répertoire {output_directory} créé.")
 
     for file in files:
-        logging.info(f"Traitement du fichier {file}.")
-        clustering = DensityClustering(os.path.join(input_directory, os.path.basename(file)))
+        file_path = os.path.join(input_directory, f"{os.path.splitext(os.path.basename(file))[0]}.txt")
+        if not os.path.isfile(file_path):
+            # TODO: Ajouter le directory devant file
+            logging.warning(f"Fichier {file} introuvable.")
+            continue
+
+        logging.info(f"Clustering HDBSCAN du fichier {file}.")
+        clustering = DensityClustering(file_path)
         clustering.load_data()
         labels = clustering.perform_clustering("HDBSCAN", min_samples=min_samples, metric=metric, reduction=reduction)
-        clustering.save_clusters_to_file(os.path.join(output_directory, os.path.basename(file)))
+        clustering.save_clusters_to_file(os.path.join(output_directory, os.path.basename(file_path)))
 
     logging.info(f"Fin du clustering HDBSCAN.")
 
@@ -189,4 +197,4 @@ if __name__ == '__main__':
     # clustering.find_epsilon(4)
     # print(f"Bruit : {sum(1 for l in labels if l == -1)} points")
     # clustering.visualize_clusters("DBSCAN")
-    clustering_hdbscan([FILE], "cluster_molecules/resultats_fingerprints/", "z_test/", True)
+    clustering_hdbscan([FILE], "cluster_molecules/resultats_fingerprints/", "cluster_molecules/clusters_fingerprints/", True)

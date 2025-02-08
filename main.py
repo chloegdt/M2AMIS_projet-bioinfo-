@@ -13,9 +13,9 @@ import dbscan_hdbscan
 import markov_clustering_micans
 
 FILES = [
-    #"energy_50.0_precursor_M+H.mgf",
-    #"energy_10.0_precursor_M+H.mgf",
-    #"energy_30.0_precursor_M+H.mgf",
+    # "energy_50.0_precursor_M+H.mgf",
+    # "energy_10.0_precursor_M+H.mgf",
+    # "energy_30.0_precursor_M+H.mgf",
     "energy_37.0_precursor_M+Na.mgf",
     "energy_25.0_precursor_M+Na.mgf"
 ]
@@ -25,7 +25,8 @@ MAPPING = {
     "mcl",
     "parse",
     "fingerprint",
-    "groups",
+    "groupes",
+    "hdbscan",
 }
 FILENAME1 = "Cluster.mgf"
 FILENAME2 = "ALL_GNPS_cleaned.mgf"
@@ -40,8 +41,9 @@ def get_parser():
                     "similarite   - Calcule la similarité cosinus entre les spectres\n"
                     "               et la similarité fingerprints des smiles.\n"
                     "spectres     - Analyse les spectres de masse.\n"
-                    "groups       - Regroupe les molécules en fonction de critères spécifiques.\n"
-                    "functionnal  - Identifie les groupes fonctionnels présents.\n",
+                    "groupes       - Regroupe les molécules en fonction de critères spécifiques.\n"
+                    "functionnal  - Identifie les groupes fonctionnels présents.\n"
+                    "hdbscan      - Applique le clustering HDBSCAN\n",
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument(
@@ -107,12 +109,12 @@ def main():
             logging.info("Utilisation des fichiers par défaut.")
             logging.info("Pour utiliser d'autres fichiers : main.py {command} -p/--path PATH")
             check_chosen_files(parser)
-            cosinus.main_selected_files(DIRECTORY, FILES)
+            cosinus.main_selected_files(FILES, DIRECTORY)
 
     elif command == "mcl" :
         inputdir = "cluster_molecules/resultats_cosinus_spectres"
         outputdir = "cluster_molecules/clusters_spectres_cosinus"
-        markov_clustering_micans.clustering(inputdir, outputdir, "1.1")
+        markov_clustering_micans.clustering(inputdir, outputdir, "2.0")
 
     elif command == "visualisation" :
         print()
@@ -123,11 +125,22 @@ def main():
         check_chosen_files(parser)
         fingerprint.main(FILES)
 
-    elif command == "groups":
+    elif command == "groupes":
         logging.info("Utilisation des fichiers par défaut.")
         logging.info("Pour utiliser d'autres fichiers : main.py {command} -p/--path PATH")
         check_chosen_files(parser)
         functionnal_group.main(FILES)
+
+    elif command == "hdbscan":
+        logging.info("Utilisation des fichiers par défaut.")
+        logging.info("Pour utiliser d'autres fichiers : main.py {command} -p/--path PATH")
+        check_chosen_files(parser)
+        logging.info("HDBSCAN sur spectres.")
+        dbscan_hdbscan.clustering_hdbscan(FILES, "cluster_molecules/resultats_cosinus_spectres/", "cluster_molecules/HDBSCAN_cosinus_spectre/", True)
+        logging.info("HDBSCAN sur fingerprints.")
+        dbscan_hdbscan.clustering_hdbscan(FILES, "cluster_molecules/resultats_fingerprints/", "cluster_molecules/HDBSCAN_fingerprints_smiles/", True)
+        logging.info("HDBSCAN sur groupes fonctionnels.")
+        dbscan_hdbscan.clustering_hdbscan(FILES, "cluster_molecules/resultats_groupes-fonc/", "cluster_molecules/HDBSCAN_groupes_smiles/", False)
 
     else:
         parser.error(f"Commande inconnu: {command}. Utilisez 'help' pour voir les options disponibles.")

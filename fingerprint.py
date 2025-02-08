@@ -117,7 +117,7 @@ def main(files):
         return
 
     smiles_dict = create_dict_from_smiles(FILENAME)
-    smiles = [smiles_dict.get(file) for file in files]
+    smiles = [smiles_dict.get(file, []) for file in files]
     logging.info(f"Début du calcul des similarités fingerprints des SMILES.")
 
     for i, smile in enumerate(smiles):

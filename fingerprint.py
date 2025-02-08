@@ -8,7 +8,7 @@ from rdkit.Chem import rdFingerprintGenerator
 
 from parse_data_final import create_dict_from_smiles
 
-FILENAME = "cluster_molecules_test/smiles.txt"
+FILENAME = "cluster_molecules/smiles.txt"
 SAVE_DIRECTORY = "cluster_molecules/resultats_fingerprints/"
 FPSIZE = 4096
 FILES = [
@@ -112,6 +112,10 @@ def main(files):
 
     @param files: Liste contenant les nom des fichiers à traiter.
     """
+    if not os.path.exists(FILENAME):
+        logging.error(f"Fichier {FILENAME} introuvable. Executez le parsing puis réessayez.")
+        return
+
     smiles_dict = create_dict_from_smiles(FILENAME)
     smiles = [smiles_dict.get(file) for file in files]
     logging.info(f"Début du calcul des similarités fingerprints des SMILES.")

@@ -3,10 +3,7 @@ import logging
 import numpy as np
 import fingerprint as fg
 
-from pyteomics import mgf
 from rdkit import Chem
-from rdkit.Chem import FilterCatalog
-from rdkit.Chem.FilterCatalog import FilterCatalogParams
 from parse_data_final import create_dict_from_smiles
 
 SAVE_DIRECTORY = "cluster_molecules/resultats_groupes-fonc/"
@@ -94,6 +91,10 @@ def main(files):
 
     @param files: Liste contenant les nom des fichiers à traiter.
     """
+    if not os.path.exists(fg.FILENAME):
+        logging.error(f"Fichier {fg.FILENAME} introuvable. Executez le parsing puis réessayez.")
+        return
+
     smiles_dict = create_dict_from_smiles(fg.FILENAME)
     smiles = [smiles_dict.get(file) for file in files]
     logging.info(f"Début du calcul des similarités de groupes fonctionnels à partir des SMILES.")
@@ -103,7 +104,7 @@ def main(files):
         groupes = getFunctionalGroups(molecules)
         sim = fg.tanimotoSimilarity(groupes)
         fg.matrixToTxt(sim, SAVE_DIRECTORY, files[i])
-        logging.info(f"Fichier {i+1} traité.")
+        logging.info(f"Fichier {files[i]} traité.")
 
     logging.info(f"Calcul des similarités de groupes fonctionnels à partir des SMILES terminé. \nRésultats dans le dossier: {SAVE_DIRECTORY}")
 

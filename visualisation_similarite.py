@@ -1,3 +1,4 @@
+import logging
 import pandas as pd
 import numpy as np
 import umap
@@ -120,12 +121,12 @@ class Cluster :
             print("Cluster Labels:", self.labels)
             return self
 
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    file_spect10_MH = "resultats_sim_cos/energy_10.0_precursor_M+H.txt"
+    file_smil10_MH = "resultats_sim_smi/energy_10.0_precursor_M+H.txt"
 
-# MAIN
-file_spect10_MH = "resultats_sim_cos/energy_10.0_precursor_M+H.txt"
-file_smil10_MH = "resultats_sim_smi/energy_10.0_precursor_M+H.txt"
+    cluster = Cluster
+    Cluster.clustering(cluster, file_smil10_MH, True)
 
-cluster = Cluster
-Cluster.clustering(cluster, file_smil10_MH, True)
-
-visualization(cluster.matrix, cluster.labels, False)
+    visualization(cluster.matrix, cluster.labels, False)

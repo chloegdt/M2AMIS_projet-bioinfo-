@@ -1,3 +1,4 @@
+import logging
 import networkx as nx
 from pyvis.network import Network
 from pyteomics import mgf
@@ -45,7 +46,7 @@ def molecules_pourcentage(file, cluster_spectre, cluster_smiles) :
     print(f"Pourcentage de molécules communes : {percentage:.2f}%")
     
 
-def plot_common_clusters(common_clusters, output_file="common_clusters.html"):
+def net_common_clusters(common_clusters, output_file="common_clusters.html"):
     
     G = nx.Graph()
     
@@ -72,14 +73,17 @@ def plot_common_clusters(common_clusters, output_file="common_clusters.html"):
 
     print(f"Network saved as {output_file}. Ouvrez le fichier manuellement (firefox common_clusters).")
 
-file = "energy_37.0_precursor_M+Na.mgf"
-file1 = "cluster_smiles_37.0_precursor_M+Na.txt"
-file2 = "cluster_spectre_37.0_precursor_M+Na.txt"
 
-smiles_clusters = load_clusters(file1)
-spectrum_clusters = load_clusters(file2)
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    file = "energy_37.0_precursor_M+Na.mgf"
+    file1 = "cluster_smiles_37.0_precursor_M+Na.txt"
+    file2 = "cluster_spectre_37.0_precursor_M+Na.txt"
 
-common_clusters = find_common_clusters(smiles_clusters, spectrum_clusters)
+    smiles_clusters = load_clusters(file1)
+    spectrum_clusters = load_clusters(file2)
 
-plot_common_clusters(common_clusters)
-molecules_pourcentage(file, spectrum_clusters, smiles_clusters)
+    common_clusters = find_common_clusters(smiles_clusters, spectrum_clusters)
+
+    net_common_clusters(common_clusters)
+    molecules_pourcentage(file, spectrum_clusters, smiles_clusters)

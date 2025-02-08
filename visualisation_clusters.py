@@ -1,3 +1,4 @@
+import logging
 import networkx as nx
 from pyvis.network import Network
 import matplotlib.pyplot as plt
@@ -6,6 +7,13 @@ import matplotlib
 
 
 def read_clusters_from_file(file_path):
+    """
+        Permet de lire une matrice de cluster. Chaque ligne est un cluster
+        et chaque nombre dans la ligne est l'id d'une molécule.
+
+        @param Le chemin du fichier à lire.
+        @return La liste des cluster.
+    """
     clusters = {}
     
     with open(file_path, 'r') as f:
@@ -19,7 +27,14 @@ def read_clusters_from_file(file_path):
 
 
 def read_cluster_matrix(file_path):
-    
+    """
+        Permet de lire une matrice de cluster. Chaque ligne est un cluster
+        et chaque nombre dans la ligne est l'id d'une molécule. Mais
+        rajoute un nom à chaque cluster.
+
+        @param Le chemin du fichier à lire.
+        @return La liste des cluster.
+    """
     clusters = {}
 
     with open(file_path, 'r') as f:
@@ -35,6 +50,11 @@ def read_cluster_matrix(file_path):
 
 
 def plot_cluster_network(file_path):
+    """
+        Créer un plot des cluster. Mais la visualisation n'est pas très clair. 
+
+        @param Le chemin du fichier à lire.
+    """
     clusters = read_clusters_from_file(file_path)
 
     G = nx.Graph()
@@ -72,7 +92,14 @@ def plot_cluster_network(file_path):
 
 
 def plot_interactive_network(file_path, output_file="network.html"):
-    
+    """
+        Créer un fichier html qui est un network (un graphe). Dans ce graphe, chaque
+        molécule est relié à son cluster.
+
+        @param file_path : le chemin du fichier à lire.
+        @param output_file="network.html" Le nom du fichier resultat.
+    """
+
     clusters = read_cluster_matrix(file_path)
 
     G = nx.Graph()
@@ -97,13 +124,17 @@ def plot_interactive_network(file_path, output_file="network.html"):
 
     try:
         net.show(output_file)
-        print(f"Saved as {output_file}")
+        #print(f"Saved as {output_file}")
+        logging.info(f"Fichier de visualisation sauvergarder : {output_file}")
+        logging.info(f"Pour ouvrir il faut faire : firefox {output_file}")
     except Exception as e:
-        print(f"Error network: {e}")
+        #print(f"Error network: {e}")
+        logging.error(f"network: {e}")
 
 
-
-file = "test.txt"
-file_path = "clusters_smiles_dbscan/energy_10.0_precursor_M+H.txt"
-#plot_cluster_network(file_path)
-plot_interactive_network(file_path)
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    file = "test.txt"
+    file_path = "clusters_smiles_dbscan/energy_10.0_precursor_M+H.txt"
+    #plot_cluster_network(file_path)
+    plot_interactive_network(file_path)

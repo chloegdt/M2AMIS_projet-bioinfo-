@@ -11,6 +11,8 @@ import fingerprint
 import functionnal_group
 import dbscan_hdbscan
 import markov_clustering_micans
+from visualisation_clusters import plot_interactive_network
+from visualisation_mol_communes import find_common_clusters, load_clusters, net_common_clusters
 
 FILES = [
     # "energy_50.0_precursor_M+H.mgf",
@@ -21,7 +23,7 @@ FILES = [
 ]
 MAPPING = {
     "visualisation",
-    "similarite",
+    "cosinus",
     "mcl",
     "parse",
     "fingerprint",
@@ -37,25 +39,32 @@ def get_parser():
     parser = argparse.ArgumentParser(
         description="Clustering of Spectrum and Smiles\nFichiers nécessaire :\nCluster.mgf et/ou ALL_GNPS_cleaned.mgf ",
         epilog="Commandes disponibles :\n"
-                    "parse        - Vérifie et analyse les fichiers d'entrée.\n"
-                    "similarite   - Calcule la similarité cosinus entre les spectres\n"
-                    "               et la similarité fingerprints des smiles.\n"
-                    "spectres     - Analyse les spectres de masse.\n"
-                    "groupes       - Regroupe les molécules en fonction de critères spécifiques.\n"
-                    "functionnal  - Identifie les groupes fonctionnels présents.\n"
-                    "hdbscan      - Applique le clustering HDBSCAN\n",
+                    "parse          - Vérifie et analyse les fichiers d'entrée.\n"
+                    "cosinus        - Calcule la similarité cosinus entre les spectres\n"
+                    "                 et la similarité fingerprints des smiles.\n"
+                    "spectres       - Analyse les spectres de masse.\n"
+                    "groupes        - Regroupe les molécules en fonction de critères spécifiques.\n"
+                    "functionnal    - Identifie les groupes fonctionnels présents.\n"
+                    "hdbscan        - Applique le clustering HDBSCAN\n"
+                    "intersection   - Permet de visualiser les clusters commun entre deux fichiers de cluster\n"
+                    "cluster        - Permet de visualiser les cluster d'un fichier.\n",
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument(
         "command",
         type=str,
         nargs="?",
-        help="The command to execute (e.g., 'parse', 'similarite', etc.)."
+        help="Les commandes à executé(ex : 'parse', 'cosinus', etc.)."
     )
     parser.add_argument(
         "-p", "--path",
         type=pathlib.Path,
-        help="Path to the input file or directory."
+        help="Chemin vers un fichier ou repertoire.\nNecessaire pour cluster et intersection."
+    )
+    parser.add_argument(
+        "-s",
+        type=pathlib.Path,
+        help="Chemin vers un fichier.\nNecessaire pour intersection."
     )
     return parser
 
@@ -80,6 +89,18 @@ def check_chosen_files(parser):
         parser.print_help()
         sys.exit(0)
 
+def check_path(args):
+    if args.path:
+        if not args.path.exists():
+            logging.error("Le fichier donné est introuvable.")
+            return False
+        print(f"File provided: {args.path.resolve()}")
+        file_path = args.path
+        print(file_path)
+        return True
+    else:
+        logging.error("Il faut un chemin vers un fichier à visualiser.")
+        return False
 
 def main():
     parser = get_parser()
@@ -96,7 +117,7 @@ def main():
     if command == "parse" :
         check_files()
 
-    elif command == "similarite" :
+    elif command == "cosinus" :
         if args.path:
             print(f"Path provided: {args.path.resolve()}")
             directory_path = args.path
@@ -116,8 +137,23 @@ def main():
         outputdir = "cluster_molecules/clusters_spectres_cosinus"
         markov_clustering_micans.clustering(inputdir, outputdir, "2.0")
 
-    elif command == "visualisation" :
-        print()
+    elif command == "intersection":
+        if check_path(args) :
+            smiles_clusters = load_clusters(args.path)
+            spectrum_clusters = load_clusters(args.path)
+
+            common_clusters = find_common_clusters(smiles_clusters, spectrum_clusters)
+
+            net_common_clusters(common_clusters)
+        else :
+            logging.error("Fichier demandé : .txt de deux clusters")
+
+    elif command == "cluster":
+        if check_path(args) :
+            plot_interactive_network(args.path)
+        else :
+            logging.error("Fichier demandé : .txt de cluster")
+            logging.error("Exemple : cluster_molecules/HDBSCAN_cosinus_spectre/energy_37.0_precursor_M+Na.txt")
 
     elif command == "fingerprint":
         logging.info("Utilisation des fichiers par défaut.")

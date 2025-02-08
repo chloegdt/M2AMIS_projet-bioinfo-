@@ -62,7 +62,7 @@ def assign_ids_to_spectra(spectres):
     # si la liste est vide, un message d'erreur s'affiche
     if not spectres:
         logging.warning("La liste des spectres est vide. Aucun ID assigné.")
-        return spectres
+        return
 
     # ajoute un id unique dans les métadonnées du spectre
     for idx, spectre in enumerate(spectres):

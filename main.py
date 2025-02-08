@@ -15,61 +15,62 @@ from visualisation_clusters import plot_interactive_network
 from visualisation_mol_communes import find_common_clusters, load_clusters, net_common_clusters
 
 FILES = [
-    # "energy_50.0_precursor_M+H.mgf",
-    # "energy_10.0_precursor_M+H.mgf",
-    # "energy_30.0_precursor_M+H.mgf",
     "energy_37.0_precursor_M+Na.mgf",
-    "energy_25.0_precursor_M+Na.mgf"
+    "energy_50.0_precursor_M+H.mgf",
+    "energy_10.0_precursor_M+H.mgf",
+    "energy_30.0_precursor_M+H.mgf",
 ]
-MAPPING = {
-    "visualisation",
-    "cosinus",
-    "mcl",
-    "parse",
-    "fingerprint",
-    "groupes",
-    "hdbscan",
-}
 FILENAME1 = "Cluster.mgf"
 FILENAME2 = "ALL_GNPS_cleaned.mgf"
 DIRECTORY = "cluster_molecules/"
 
 
 def get_parser():
+    """
+    Récupère le parseur d'arguments contenant la description de toutes les commandes.
+
+    @return: Objet ArgumentParser configuré.
+    """
     parser = argparse.ArgumentParser(
-        description="Clustering of Spectrum and Smiles\nFichiers nécessaire :\nCluster.mgf et/ou ALL_GNPS_cleaned.mgf ",
+        description="Clustering of Spectrum and Smiles\nFichiers nécessaire : Cluster.mgf et/ou ALL_GNPS_cleaned.mgf ",
         epilog="Commandes disponibles :\n"
-                    "parse          - Vérifie et analyse les fichiers d'entrée.\n"
-                    "cosinus        - Calcule la similarité cosinus entre les spectres\n"
-                    "                 et la similarité fingerprints des smiles.\n"
-                    "spectres       - Analyse les spectres de masse.\n"
-                    "groupes        - Regroupe les molécules en fonction de critères spécifiques.\n"
-                    "functionnal    - Identifie les groupes fonctionnels présents.\n"
-                    "hdbscan        - Applique le clustering HDBSCAN\n"
-                    "intersection   - Permet de visualiser les clusters commun entre deux fichiers de cluster\n"
+                    "parse          - Prétraitement des spectres des fichiers Cluster.mgf et/ou ALL_GNPS_cleaned.mgf.\n"
+                    "cosinus        - Calcule la similarité cosinus entre les molécules à partir de leur spectres.\n"
+                    "groupes        - Calcule la similarité Tanimoto des molécules à partir de leur fingerprints de Morgan.\n"
+                    "fingerprint    - Calcule la similarité Tanimoto à partir d'une représentation par groupes foncitonnels.\n"
+                    "hdbscan        - Applique le clustering HDBSCAN.\n"
+                    "mcl            - Applique le clustering Markov Clustering (MCL).\n"
+                    "intersection   - Permet de visualiser les clusters commun entre deux fichiers de cluster.\n"
                     "cluster        - Permet de visualiser les cluster d'un fichier.\n",
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument(
         "command",
         type=str,
-        nargs="?",
+        choices=["parse", "cosinus", "groupes", "fingerprint", "hdbscan", "mcl", "intersection", "cluster"],
         help="Les commandes à executé(ex : 'parse', 'cosinus', etc.)."
     )
     parser.add_argument(
         "-p", "--path",
         type=pathlib.Path,
-        help="Chemin vers un fichier ou repertoire.\nNecessaire pour cluster et intersection."
+        help="Chemin vers un fichier ou repertoire.\nNecessaire pour cluster et intersection.\n"
+        "Exemple: python3 main.py cluster -p cluster_molecules/HDBSCAN_cosinus_spectre/energy_37.0_precursor_M+Na.txt"
     )
     parser.add_argument(
         "-s",
         type=pathlib.Path,
-        help="Chemin vers un fichier.\nNecessaire pour intersection."
+        help="Chemin vers un fichier.\nNecessaire pour intersection.\n"
+        "Exemple: python3 main.py intersection -p cluster_molecules/HDBSCAN_cosinus_spectre/energy_37.0_precursor_M+Na.txt "
+        "-s cluster_molecules/HDBSCAN_fingerprints_smiles/energy_37.0_precursor_M+Na.txt"
     )
     return parser
 
 
 def check_files():
+    """
+    Vérifie la présence des fichiers nécessaires dans le répertoire spécifié.
+    Si un fichier est manquant, déclenche l'exécution de la fonction `parse_data_final.main()` pour générer les fichiers requis.
+    """
     for file in FILES:
         if not os.path.exists(os.path.join(DIRECTORY, file)):
             logging.warning(f"Les fichiers nécessaires ne sont pas présents dans {DIRECTORY} \nExécution de parse...")
@@ -78,6 +79,12 @@ def check_files():
 
 
 def check_chosen_files(parser):
+    """
+    S'assure qu'au moins un des fichiers requis est disponible pour le clustering.
+    Si aucun fichier n'est trouvé, affiche l'aide du parseur et termine l'exécution.
+
+    @param parser: Objet ArgumentParser configuré dans get_parser().
+    """
     count = 0
     for file in FILES :
         file = "cluster_molecules/" + file 
@@ -85,11 +92,18 @@ def check_chosen_files(parser):
             count += 1
 
     if count == 0:
-        print("Il faut que au moins 1 des 5 fichiers soit présent après le parsing.")
+        print("Il faut que au moins 1 des 4 fichiers soit présent après le parsing.")
         parser.print_help()
         sys.exit(0)
 
+
 def check_path(args):
+    """
+    Vérifie l'existence du chemin de fichier fourni en argument.
+
+    @param args: Objet contenant les arguments entrée.
+    @return: booléen indiquant si le fichier existe ou non.
+    """
     if args.path:
         if not args.path.exists():
             logging.error("Le fichier donné est introuvable.")
@@ -102,7 +116,12 @@ def check_path(args):
         logging.error("Il faut un chemin vers un fichier à visualiser.")
         return False
 
+
+
 def main():
+    """
+    Fonction principale qui coordonne l'exécution des différentes commandes en fonction des arguments fournis.
+    """
     parser = get_parser()
     args = parser.parse_args()
     if args.command is None or args.command.lower() == "help":
@@ -127,8 +146,6 @@ def main():
                 logging.error("Le chemin entré est introuvable.")
                 sys.exit(1)
         else:
-            logging.info("Utilisation des fichiers par défaut.")
-            logging.info("Pour utiliser d'autres fichiers : main.py {command} -p/--path PATH")
             check_chosen_files(parser)
             cosinus.main_selected_files(FILES, DIRECTORY)
 
@@ -156,20 +173,14 @@ def main():
             logging.error("Exemple : cluster_molecules/HDBSCAN_cosinus_spectre/energy_37.0_precursor_M+Na.txt")
 
     elif command == "fingerprint":
-        logging.info("Utilisation des fichiers par défaut.")
-        logging.info("Pour utiliser d'autres fichiers : main.py {command} -p/--path PATH")
         check_chosen_files(parser)
         fingerprint.main(FILES)
 
     elif command == "groupes":
-        logging.info("Utilisation des fichiers par défaut.")
-        logging.info("Pour utiliser d'autres fichiers : main.py {command} -p/--path PATH")
         check_chosen_files(parser)
         functionnal_group.main(FILES)
 
     elif command == "hdbscan":
-        logging.info("Utilisation des fichiers par défaut.")
-        logging.info("Pour utiliser d'autres fichiers : main.py {command} -p/--path PATH")
         check_chosen_files(parser)
         logging.info("HDBSCAN sur spectres.")
         dbscan_hdbscan.clustering_hdbscan(FILES, "cluster_molecules/resultats_cosinus_spectres/", "cluster_molecules/HDBSCAN_cosinus_spectre/", True)

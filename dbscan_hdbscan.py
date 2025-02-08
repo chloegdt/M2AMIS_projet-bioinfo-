@@ -14,7 +14,6 @@ warnings.filterwarnings("ignore", category=FutureWarning, module="sklearn.utils.
 warnings.filterwarnings("ignore", category=UserWarning, module="umap")
 
 
-# à modifier 
 FILE = "cluster_molecules/resultats_fingerprints/energy_37.0_precursor_M+Na.txt"
 
 
@@ -107,7 +106,7 @@ class DensityClustering:
         # print("Labels de clusters :")
         # print(np.unique(self.labels, return_counts=True))
         n_clusters = len(set(self.labels)) - (1 if -1 in self.labels else 0)
-        print(f"Nombre de clusters détectés : {n_clusters}")
+        logging.info(f"Nombre de clusters détectés : {n_clusters}")
         return self.labels
 
     def visualize_clusters(self, clustering="HDBSCAN"):
@@ -145,7 +144,6 @@ class DensityClustering:
         with open(output_file, 'w') as f:
             for cluster_id, ids in clusters_dict.items():
                 f.write("\t".join(map(str, ids)) + "\n")
-        logging.info(f"Clustering sauvegardé dans le fichier : {output_file}")
 
 
 
@@ -158,7 +156,6 @@ def clustering_hdbscan(files, input_directory, output_directory, reduction=True)
     @param output_directory: chemin du dossier de sauvegarde.
     @param reduction: booleen optionnel, choix d'utiliser la réduction de dimension umap ou non.
     """
-    logging.info("Début du clustering HDBSCAN.")
     if reduction:
         min_samples = 4
         metric = "euclidean"
@@ -172,8 +169,7 @@ def clustering_hdbscan(files, input_directory, output_directory, reduction=True)
     for file in files:
         file_path = os.path.join(input_directory, f"{os.path.splitext(os.path.basename(file))[0]}.txt")
         if not os.path.isfile(file_path):
-            # TODO: Ajouter le directory devant file
-            logging.warning(f"Fichier {file} introuvable.")
+            logging.warning(f"Fichier {file_path} introuvable.")
             continue
 
         logging.info(f"Clustering HDBSCAN du fichier {file}.")
@@ -181,8 +177,7 @@ def clustering_hdbscan(files, input_directory, output_directory, reduction=True)
         clustering.load_data()
         labels = clustering.perform_clustering("HDBSCAN", min_samples=min_samples, metric=metric, reduction=reduction)
         clustering.save_clusters_to_file(os.path.join(output_directory, os.path.basename(file_path)))
-
-    logging.info(f"Fin du clustering HDBSCAN.")
+    logging.info(f"Clusters sauvegardés dans le dossier : {output_directory}\n")
 
 
 

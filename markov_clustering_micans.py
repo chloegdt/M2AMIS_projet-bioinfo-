@@ -25,7 +25,7 @@ def clustering(inputdir, outputdir, inflation):
     @param influation: when increasing, the max distance between two elements of a cluster is smaller
     """
     if not os.path.exists(outputdir):
-        os.mkdir(outputdir)
+        os.makedirs(outputdir, exist_ok=True)
     
     clear_directory(outputdir)
 

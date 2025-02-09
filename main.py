@@ -41,7 +41,8 @@ def get_parser():
                     "groupes        - Calcule la similarité Tanimoto des molécules à partir de leur fingerprints de Morgan.\n"
                     "fingerprint    - Calcule la similarité Tanimoto à partir d'une représentation par groupes foncitonnels.\n"
                     "hdbscan        - Applique le clustering HDBSCAN.\n"
-                    "mcl            - Applique le clustering Markov Clustering (MCL).\n"
+                    "mcl-c          - Applique le clustering Markov Clustering (MCL) à partir de la bibliothèque en C.\n"
+                    "mcl-py         - Applique le clustering Markov Clustering (MCL) à partir du module python.\n"
                     "intersection   - Permet de visualiser les clusters commun entre deux fichiers de cluster.\n"
                     "cluster        - Permet de visualiser les cluster d'un fichier.\n"
                     "ari            - Compare les résultats de clustering HDBSCAN et MCL en utilisant ARI (Adjusted Rand Index) pour tous les fichiers.\n"
@@ -51,7 +52,7 @@ def get_parser():
     parser.add_argument(
         "command",
         type=str,
-        choices=["parse", "cosinus", "groupes", "fingerprint", "hdbscan", "mcl", "intersection", "cluster", "ari", "nmi", "mcl-c"],
+        choices=["parse", "cosinus", "groupes", "fingerprint", "hdbscan", "mcl-py", "intersection", "cluster", "ari", "nmi", "mcl-c"],
         help="Les commandes à executé(ex : 'parse', 'cosinus', etc.)."
     )
     parser.add_argument(
@@ -161,7 +162,7 @@ def main():
         logging.info("MCL sur groupes fonctionnels.")
         markov_clustering_micans.clustering("cluster_molecules/resultats_groupes-fonc", "cluster_molecules/resultats_clusters_mcl/groupefonct", "2.0")
 
-    elif command == "mcl":
+    elif command == "mcl-py":
         logging.info("MCL sur spectres.")
         markov_clustering_bibPython.clustering("cluster_molecules/resultats_cosinus_spectres", "cluster_molecules/resultats_clusters_mcl/spectre", 2.0, False)
         logging.info("MCL sur fingerprints.")

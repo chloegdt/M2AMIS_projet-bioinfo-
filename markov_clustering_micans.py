@@ -30,7 +30,11 @@ def clustering(inputdir, outputdir, inflation):
     clear_directory(outputdir)
 
     for file in os.listdir(inputdir):
-        commande = ["mcl", os.path.join(inputdir, file), "--abc", "-I", inflation, "-odir", outputdir]
+        if file.startswith('.'):
+            continue
+        output_file = os.path.join(outputdir, f"{os.path.basename(file).split('.')[0]}.txt")
+        commande = ["mcl", os.path.join(inputdir, file), "--abc", "-I", inflation, "-o", output_file]
+        # commande = ["mcl", os.path.join(inputdir, file), "--abc", "-I", inflation, "-odir", outputdir]
         resulta  = subprocess.run(commande)
 
 if __name__ == "__main__":

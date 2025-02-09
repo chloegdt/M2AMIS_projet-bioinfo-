@@ -52,7 +52,8 @@ L'attribut `<command>` peut prendre les valeurs suivantes:
 * `cosinus` : Calcule les matrices de similarités cosinus sur les spectres.
 * `fingerprint` : Calcule les matrices de similarités Tanimoto sur les fingerprints des SMILES.
 * `groupes` : Calcule les matrices de similarités Tanimoto sur les fingerprints des SMILES.
-* `mcl` : Fait le clustering de Markov Clustering sur les 3 types de similarités (en utilisant la version python).
+* `mcl-c`  : Fait le clustering de Markov Clustering sur les 3 types de similarités (en utilisant la bibliothèque en C).
+* `mcl-py` : Fait le clustering de Markov Clustering sur les 3 types de similarités (en utilisant la version python).
 * `hdbscan` : Fait le clustering HDBSCAN sur les 3 types de similarités.
 * `ari` : Calcule la valeur ARI entre les différents résultats de clustering.
 * `nmi` : Calcule la valeur NMI entre les différents résultats de clustering.

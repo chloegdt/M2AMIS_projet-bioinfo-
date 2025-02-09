@@ -1,6 +1,6 @@
 # Module Projet - M2 AMIS - Février 2025 
 #### Clémence DUMOULIN, Sébastien FERNANDEZ, Chloé GODET,
-#### Raphaël GUERIN Jeffried NOULEHO NOUADJE
+#### Raphaël GUERIN et Jeffried NOULEHO NOUADJE
 ________________________
 
 ## Description

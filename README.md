@@ -22,6 +22,8 @@ Le code est principalement écrit en Python et utilise diverses bibliothèques p
 * visualisation_clusters.py : Permet une visualisation (plot ou web) des molécules dans les clusters (sans prendre en compte les distances inter et intra cluster).
 * visualisation_mol_communes.py : Permet de visualiser l'intersection de 2 clustering en regardant les clusters ayant des molécules en communs.
 * visualisation_similarite.py : Permet la visualisation des similarités en utilisant 3 algorithmes: UMAP, T_SNE et PCA.
+* ari.py : Compare les résultats de clustering HDBSCAN et MCL en utilisant la méthode ARI (Adjusted Rand Index).
+* nmi.py : Compare les résultats de clustering HDBSCAN et MCL en utilisant la méthode NMI (Normalized Mutual Information).
 
 
 ## Modules nécessaires
@@ -51,11 +53,15 @@ L'attribut `<command>` peut prendre les valeurs suivantes:
 * `groupes` : Calcule les matrices de similarités Tanimoto sur les fingerprints des SMILES.
 * `mcl` : Fait le clustering de Markov Clustering sur les 3 types de similarités.
 * `hdbscan` : Fait le clustering HDBSCAN sur les 3 types de similarités.
+* `ari` : Calcule la valeur ARI entre les différents résultats de clustering.
+* `nmi` : Calcule la valeur NMI entre les différents résultats de clustering.
+
 
 L'exécution doit être fait dans un certain ordre.
 Pour pouvoir calculer les similarités (commandes `cosinus`, `fingerprint` et `groupes`) il faut avoir les fichiers contenant les molécules et donc avoir exécuté le parsing avec `% python main.py parse`.
 Pour utiliser les méthodes de clustering (commandes `mcl` et `hdbscan`) il faut avoir des fichiers de similarités.
-Pour effectuer la visualisation (commandes `cluster` et `intersection`), il faut des fichiers de clustering.
+Pour effectuer la visualisation (commandes `cluster` et `intersection`), il faut avoir les fichiers de clustering.
+Pour effectuer la comparaison de clusters (commandes `ari` et `nmi`), il faut avoir les fichiers de clustering.
 
 
 Pour la visualisation, il y a 2 commandes possibles qui prennent chacunes des arguments:

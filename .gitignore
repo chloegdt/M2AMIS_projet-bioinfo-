@@ -10,5 +10,6 @@ __pycache__
 *.html
 *.js
 *.css
+res_*.txt
 energy_25.0_precursor_M+Na.mgf
 energy_37.0_precursor_M+Na.mgf

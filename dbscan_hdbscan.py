@@ -1,15 +1,20 @@
+import os
+import logging
 import numpy as np
 import pandas as pd
-from scipy.sparse import coo_matrix
-from sklearn.neighbors import NearestNeighbors
-import hdbscan
-from sklearn.cluster import DBSCAN
 import matplotlib.pyplot as plt
 import umap
+import hdbscan
 
-# à modifier 
-FILE = "spectre50.txt"
-OUTPUT = "res_spectre50.txt"
+from scipy.sparse import coo_matrix
+from sklearn.cluster import DBSCAN
+from sklearn.neighbors import NearestNeighbors
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning, module="sklearn.utils.deprecation")
+warnings.filterwarnings("ignore", category=UserWarning, module="umap")
+
+
+FILE = "cluster_molecules/resultats_fingerprints/energy_37.0_precursor_M+Na.txt"
 
 
 class DensityClustering:
@@ -79,7 +84,7 @@ class DensityClustering:
 
         @param clustering : str, par défaut "HDBSCAN", choix de l'algorithme ("DBSCAN" ou "HDBSCAN")
         @param eps : float, optionnel (DBSCAN uniquement) distance seuil pour regrouper des points
-        @min_samples : int, optionnel, par défaut 4, nombre minimal de voisins pour former un cluster
+        @param min_samples : int, optionnel, par défaut 4, nombre minimal de voisins pour former un cluster
         @return np.ndarray : Labels des clusters attribués aux spectres.
         """
         reducer = umap.UMAP(n_components=2, metric='precomputed', random_state=42)
@@ -99,6 +104,28 @@ class DensityClustering:
         print(np.unique(self.labels, return_counts=True))
         n_clusters = len(set(self.labels)) - (1 if -1 in self.labels else 0)
         print(f"Nombre de clusters détectés : {n_clusters}")
+        return self.labels
+
+    def perform_clustering_hdbscan(self, eps=0.2, min_samples=4, metric="euclidean", reduction=True):
+        """
+        Applique le clustering HDBSCAN sur les données.
+
+        @param eps : float, optionnel (DBSCAN uniquement) distance seuil pour regrouper des points
+        @param in_samples : int, optionnel, par défaut 4, nombre minimal de voisins pour former un cluster
+        @param reduction : boolean, optionnel, par défaut True, choix d'utiliser la réduction de dimension umap ou non
+        @return np.ndarray : Labels des clusters attribués aux spectres.
+        """
+        clusterer = hdbscan.HDBSCAN(min_cluster_size=min_samples, metric=metric, alpha=1.0)
+
+        if reduction:
+            reducer = umap.UMAP(n_components=2, metric='precomputed', random_state=42)
+            umap_embedding = reducer.fit_transform(self.distance_matrix)
+            self.labels = clusterer.fit_predict(umap_embedding)
+        else:
+            self.labels = clusterer.fit_predict(self.distance_matrix)
+
+        n_clusters = len(set(self.labels)) - (1 if -1 in self.labels else 0)
+        logging.info(f"Nombre de clusters détectés : {n_clusters}")
         return self.labels
 
     def visualize_clusters(self, clustering="HDBSCAN"):
@@ -138,7 +165,43 @@ class DensityClustering:
                 f.write("\t".join(map(str, ids)) + "\n")
 
 
+
+def clustering_hdbscan(files, input_directory, output_directory, reduction=True):
+    """
+    Applique le clustering HDBSCAN sur les fichiers d'entrée et sauvegarde en fichier texte.
+    
+    @param files: Liste contenant les nom des fichiers à traiter.
+    @param input_directory: chemin du dossier des fichers d'entrées.
+    @param output_directory: chemin du dossier de sauvegarde.
+    @param reduction: booleen optionnel, choix d'utiliser la réduction de dimension umap ou non.
+    """
+    if reduction:
+        min_samples = 4
+        metric = "euclidean"
+    else:
+        min_samples = 30
+        metric = "precomputed"
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory, exist_ok=True)
+        logging.info(f"Répertoire {output_directory} créé.")
+
+    for file in files:
+        file_path = os.path.join(input_directory, f"{os.path.splitext(os.path.basename(file))[0]}.txt")
+        if not os.path.isfile(file_path):
+            logging.warning(f"Fichier {file_path} introuvable.")
+            continue
+
+        logging.info(f"Clustering HDBSCAN du fichier {file}.")
+        clustering = DensityClustering(file_path)
+        clustering.load_data()
+        labels = clustering.perform_clustering_hdbscan(min_samples=min_samples, metric=metric, reduction=reduction)
+        clustering.save_clusters_to_file(os.path.join(output_directory, os.path.basename(file_path)))
+    logging.info(f"Clusters sauvegardés dans le dossier : {output_directory}\n")
+
+
+
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     file = FILE
 
     clustering = DensityClustering(file)
@@ -149,3 +212,4 @@ if __name__ == '__main__':
     print(f"Bruit : {sum(1 for l in labels if l == -1)} points")
     clustering.visualize_clusters("DBSCAN")
 
+    # clustering_hdbscan([FILE], "cluster_molecules/resultats_fingerprints/", "cluster_molecules/clusters_fingerprints/", True)

@@ -1,9 +1,11 @@
 import os
 import multiprocessing
 import logging
+import numpy as np
+import pandas as pd
+
 from scipy.sparse import coo_matrix
 from scipy.io import mmwrite
-import numpy as np
 from pathlib import Path
 from matchms.importing import load_from_mgf
 from matchms.similarity import CosineGreedy
@@ -12,7 +14,9 @@ from matchms.filtering import default_filters
 from matchms.filtering import normalize_intensities
 from matchms.filtering import select_by_intensity
 from matchms import Spectrum
-import pandas as pd
+
+INPUT_DIRECTORY = "cluster_molecules/"
+SAVE_DIRECTORY = "cluster_molecules/resultats_cosinus_spectres/"
 
 
 def get_mz_values(spectres):
@@ -67,7 +71,7 @@ def assign_ids_to_spectra(spectres):
     # ajoute un id unique dans les métadonnées du spectre
     for idx, spectre in enumerate(spectres):
         spectre.set("id", idx + 1)
-        logging.info(f"ID assigné : {spectre.metadata.get('id')}")
+        # logging.info(f"ID assigné : {spectre.metadata.get('id')}")
     return spectres
 
 
@@ -123,7 +127,7 @@ def save_score_to_file(scores_data, output_file):
 
     directory = os.path.dirname(output_file)
     if not os.path.exists(directory):
-        os.makedirs(directory)
+        os.makedirs(directory,exist_ok=True)
         print(f"Répertoire {directory} créé.")
  
     # Extraire indices et scores à partir des dictionnaires
@@ -174,7 +178,7 @@ def process_scores(n, score):
         ref_id = ref.metadata.get("id", "Unknown") - 1
 
         if query_id <= ref_id:
-            logging.info(f"Spectres comparés : {query_id} et {ref_id}")
+            # logging.info(f"Spectres comparés : {query_id} et {ref_id}")
             scores_data.append({
                 "Ref_id": ref_id,
                 "Query_id": query_id,
@@ -207,6 +211,13 @@ def calculate(spectres, output_file="output.txt", tolerance=0.01):
 
 
 def process_file(file_path, directory_path, tolerance=0.01):
+    """
+    Calcule et sauvegarde la similarité cosinus entre les spectres d'un fichier.
+
+    @param file_path: Fichier MGF des spectres à comparer.
+    @param directory_path: Répertoire utilisé pour la sauvegarde.
+    @param tolerance : Tolérance utilisée dans le calcul.
+    """
     logging.info(f"Traitement du fichier : {file_path}")
     
     fichier = list(load_from_mgf(file_path))
@@ -214,7 +225,7 @@ def process_file(file_path, directory_path, tolerance=0.01):
         logging.error(f"Aucun spectre chargé depuis le fichier : {file_path}")
         return
         
-    spectres = [process(spectre) for spectre in fichier] 
+    spectres = [process(spectre) for spectre in fichier if process(spectre) is not None]
     spectres = assign_ids_to_spectra(spectres)
     output_file = os.path.join(directory_path, "resultats_cosinus_spectres", f"{os.path.splitext(os.path.basename(file_path))[0]}.txt")
     
@@ -237,7 +248,7 @@ def main(directory_path, tolerance=0.01):
 
     target_directory = os.path.join(directory_path, "resultats_spectres")
     if not os.path.exists(target_directory):
-        os.makedirs(target_directory)
+        os.makedirs(target_directory, exist_ok=True)
         logging.info(f"Répertoire {target_directory} créé.")
     existing_files = [os.path.splitext(file)[0] for file in os.listdir(target_directory)]
     files = [f for f in os.listdir(directory_path)if f.startswith("energy") and f.endswith(".mgf") and os.path.splitext(f)[0] not in existing_files]
@@ -253,9 +264,32 @@ def main(directory_path, tolerance=0.01):
         
 
 
+def main_selected_files(selected_files, directory_path=INPUT_DIRECTORY, tolerance=0.01):
+    """
+    Fonction principale pour traiter uniquement les fichiers spécifiés.
+    
+    @param directory_path: Répertoire contenant les fichiers à traiter.
+    @param selected_files: Liste contenant les nom des fichiers à traiter.
+    @param tolerance: Tolérance utilisée dans le calcul.
+    """
+    if not Path(directory_path).exists() or not Path(directory_path).is_dir():
+        logging.error(f"Répertoire introuvable : {directory_path}")
+        return
+
+    files = [file for file in selected_files if os.path.exists(os.path.join(directory_path, file))]
+
+    if not files:
+        logging.error("Aucun fichier n'a été trouvé.")
+        return
+
+    logging.info(f"Début du calcul des similarités cosinus des spectres.")
+    for file in files:
+        process_file(os.path.join(directory_path, file), directory_path, tolerance)
+    logging.info(f"Calcul des similarités cosinus des spectres terminé.")
+
+
 
 if __name__ == "__main__":
-
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     directory_path = "cluster_molecules"
     main(directory_path)

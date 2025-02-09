@@ -13,3 +13,6 @@ __pycache__
 res_*.txt
 energy_25.0_precursor_M+Na.mgf
 energy_37.0_precursor_M+Na.mgf
+comparison_*.txt
+histogram_*.png
+lib/

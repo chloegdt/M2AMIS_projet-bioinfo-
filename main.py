@@ -14,7 +14,7 @@ from code import markov_clustering_micans
 from code import markov_clustering_bibPython
 from code.visualisation_clusters import plot_interactive_network
 from code.visualisation_mol_communes import find_common_clusters, load_clusters, net_common_clusters
-from stats import ari, nmi
+from code.stats import ari, nmi
 
 FILES = [
     "energy_37.0_precursor_M+Na.mgf",

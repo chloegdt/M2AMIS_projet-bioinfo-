@@ -12,3 +12,4 @@ scipy
 numpy
 matplotlib
 networkx
+markov_clustering

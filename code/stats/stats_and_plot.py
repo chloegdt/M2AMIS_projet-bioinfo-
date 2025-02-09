@@ -1,11 +1,12 @@
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 import scipy.stats
 from collections import Counter
 
 
-FILE1 = "resultat_spectre_30"
-FILE2 = "resultat_morgan_30"
+FILE1 = os.path.join("cluster_molecules", "resultats_clusters_hdbscan","spectre","energy_30.txt")
+FILE2 = os.path.join("cluster_molecules", "resultats_clusters_hdbscan","fingerprint","energy_30.txt")
 OUTPUT_FILE = "comparison_results_spectre1_smiles2_30_pourplot.txt"
 HISTOGRAM1 =  "histogram_spectre30.png"
 TITRE1 = "Distribution des tailles des clusters de nos spectres"

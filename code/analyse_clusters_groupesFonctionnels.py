@@ -1,4 +1,5 @@
 import numpy as np
+import os
 from parse_data_final import create_dict_from_smiles
 from rdkit import Chem
 from rdkit.Chem import FilterCatalog
@@ -128,8 +129,10 @@ def groupCluster(molecules_list):
         
 
 if __name__ == "__main__":
-    dico_smiles = create_dict_from_smiles("cluster_molecules_test/smiles.txt")
-    cluster_list = cluster_into_list("energy_50.0_precursor_M+H.txt")
+    file_smilesdico = os.path.join("cluster_molecules", "smiles.txt")
+    dico_smiles = create_dict_from_smiles(file_smilesdico)
+    file_cluster = os.path.join("cluster_molecules","resultats_clusters_hdbscan","groupefonct","energy_50.txt")
+    cluster_list = cluster_into_list(file_cluster)
     cluster_smiles_list = id_to_smiles("energy_50.0_precursor_M+H.mgf", cluster_list, dico_smiles)
     molecules_list = cluster_to_molecules(cluster_smiles_list)
     print(groupCluster(molecules_list))

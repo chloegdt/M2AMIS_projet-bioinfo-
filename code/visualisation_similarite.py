@@ -2,6 +2,7 @@ import logging
 import pandas as pd
 import numpy as np
 import umap
+import os
 import matplotlib.pyplot as plt
 from scipy.sparse import coo_matrix
 from sklearn.cluster import DBSCAN
@@ -170,8 +171,8 @@ class Cluster:
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-    file_spect10_MH = "resultats_sim_cos/energy_10.0_precursor_M+H.txt"
-    file_smil10_MH = "resultats_sim_smi/energy_10.0_precursor_M+H.txt"
+    file_spect10_MH = os.path.join("cluster_molecules","resultats_cosinus_spectres","energy_10.0_precursor_M+H.txt")
+    file_smil10_MH = os.path.join("cluster_molecules","resultats_fingerprints","energy_10.0_precursor_M+H.txt")
 
     cluster = Cluster
     Cluster.clustering(cluster, file_smil10_MH, True)

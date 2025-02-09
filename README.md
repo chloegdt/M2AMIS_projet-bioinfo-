@@ -12,19 +12,20 @@ Le code est principalement écrit en Python et utilise diverses bibliothèques p
 ## Structure du projet
 
 * analyse_clusters_groupesFonctionnels.py : Analyse les clusters de molécules selon leurs groupes fonctionnels dominant.
+* ari.py : Compare les résultats de clustering HDBSCAN et MCL en utilisant la méthode ARI (Adjusted Rand Index).
 * cosinus.py : Traite les spectres des molécules puis calcule la similarité cosinus.
 * dbscan_hdbscan.py : Applique les algorithmes de clustering DBSCAN et HDBSCAN sur des fichiers de similarité.
 * fingerprint.py : Génère des fingerprints de Morgan et calcule la similarité de Tanimoto.
 * functionnal_group.py : Identifie la présence de groupes fonctionnels et calcule la similarité de Tanimoto.
 * main.py : Gère l'éxecution des différents programmes.
-* markov_clustering_micans.py : Réalise le clustering des molécules en utilisant l'algorithme de Markov Clustering (MCL) en utilisant l'implémentation de micans en ligne de commandes.
 * markov_clustering_bibPython.py : Réalise le clustering des molécules en utilisant l'algorithme de Markov Clustering (MCL) en utilisant un module python.
+* markov_clustering_micans.py : Réalise le clustering des molécules en utilisant l'algorithme de Markov Clustering (MCL) en utilisant l'implémentation de micans en ligne de commandes.
+* nmi.py : Compare les résultats de clustering HDBSCAN et MCL en utilisant la méthode NMI (Normalized Mutual Information).
 * parse_data_final.py : Prétraitement des spectres des molécules d'un fichier mgf, pour pouvoir effectuer différentes analyses.
+* stats_and_plots.py : Statistiques permettant de comparer les clusters de spectres et de SMILES obtenus.
 * visualisation_clusters.py : Permet une visualisation (plot ou web) des molécules dans les clusters (sans prendre en compte les distances inter et intra cluster).
 * visualisation_mol_communes.py : Permet de visualiser l'intersection de 2 clustering en regardant les clusters ayant des molécules en communs.
 * visualisation_similarite.py : Permet la visualisation des similarités en utilisant 3 algorithmes: UMAP, T_SNE et PCA.
-* ari.py : Compare les résultats de clustering HDBSCAN et MCL en utilisant la méthode ARI (Adjusted Rand Index).
-* nmi.py : Compare les résultats de clustering HDBSCAN et MCL en utilisant la méthode NMI (Normalized Mutual Information).
 
 
 ## Modules nécessaires
@@ -83,6 +84,12 @@ python3 main.py cluster -p cluster_molecules/HDBSCAN_cosinus_spectre/energy_37.0
 python3 main.py intersection -p cluster_molecules/HDBSCAN_cosinus_spectre/energy_37.0_precursor_M+Na.txt -s cluster_molecules/HDBSCAN_fingerprints_smiles/energy_37.0_precursor_M+Na.txt
 ```
 
+Pour `analyse_clusters_groupesFonctionnels.py`, `stats_and_plot.py`et `visualisation_similarite.py`, les commandes sont :
+```bash
+python3 code/analyse_clusters_groupesFonctionnels.py
+python3 code/stats/stats_and_plot.py
+python3 code/visualisation_similarite.py
+```
 
 Les différentes commandes sont exécutés sur des fichiers mgf que nous avons choisis. La liste est la suivante:
 ```bash

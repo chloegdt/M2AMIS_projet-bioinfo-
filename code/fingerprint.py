@@ -6,7 +6,7 @@ from pyteomics import mgf
 from rdkit import Chem
 from rdkit.Chem import rdFingerprintGenerator
 
-from parse_data_final import create_dict_from_smiles
+from code.parse_data_final import create_dict_from_smiles
 
 FILENAME = "cluster_molecules/smiles.txt"
 SAVE_DIRECTORY = "cluster_molecules/resultats_fingerprints/"

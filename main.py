@@ -5,15 +5,15 @@ import argparse
 import pathlib
 from pathlib import Path
 
-import parse_data_final
-import cosinus
-import fingerprint
-import functionnal_group
-import dbscan_hdbscan
-import markov_clustering_micans
-import markov_clustering_bibPython
-from visualisation_clusters import plot_interactive_network
-from visualisation_mol_communes import find_common_clusters, load_clusters, net_common_clusters
+from code import parse_data_final
+from code import cosinus
+from code import fingerprint
+from code import functionnal_group
+from code import dbscan_hdbscan
+from code import markov_clustering_micans
+from code import markov_clustering_bibPython
+from code.visualisation_clusters import plot_interactive_network
+from code.visualisation_mol_communes import find_common_clusters, load_clusters, net_common_clusters
 from stats import ari, nmi
 
 FILES = [

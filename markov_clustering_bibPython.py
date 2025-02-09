@@ -56,6 +56,7 @@ def write_cluster(clusters, file):
                 f.write(str(value + 1) + " ")
             f.write("\n")
 
+
 def clustering(inputdir, outputdir, inflation, draw_graph):
     """
     Calls the command mcl to create clusters (using markov clustering) from inputdir.
@@ -70,14 +71,18 @@ def clustering(inputdir, outputdir, inflation, draw_graph):
     clear_directory(outputdir)
 
     for file in os.listdir(inputdir):
+        if file[0] == '.':
+            continue
         matrix = create_matrix(os.path.join(inputdir, file))
         result = mc.run_mcl(matrix, inflation = inflation)
         clusters = mc.get_clusters(result)
-        output_file = os.path.join(outputdir, f"{os.path.splitext(file)[0]}_cluster.txt")
+        # output_file = os.path.join(outputdir, f"{os.path.splitext(file)[0]}_cluster.txt")
+        output_file = os.path.join(outputdir, f"{file.split('.')[0]}.txt")
         write_cluster(clusters, output_file)
 
         if draw_graph:
             draw_cluster(outputdir, file, matrix, clusters) 
+
 
 if __name__ == "__main__":
     inputdir = "resultats_smiles_cosinus"

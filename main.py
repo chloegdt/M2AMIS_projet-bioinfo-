@@ -11,6 +11,7 @@ import fingerprint
 import functionnal_group
 import dbscan_hdbscan
 import markov_clustering_micans
+import markov_clustering_bibPython
 from visualisation_clusters import plot_interactive_network
 from visualisation_mol_communes import find_common_clusters, load_clusters, net_common_clusters
 from stats import ari, nmi
@@ -50,7 +51,7 @@ def get_parser():
     parser.add_argument(
         "command",
         type=str,
-        choices=["parse", "cosinus", "groupes", "fingerprint", "hdbscan", "mcl", "intersection", "cluster"],
+        choices=["parse", "cosinus", "groupes", "fingerprint", "hdbscan", "mcl", "intersection", "cluster", "ari", "nmi", "mcl-c"],
         help="Les commandes à executé(ex : 'parse', 'cosinus', etc.)."
     )
     parser.add_argument(
@@ -152,13 +153,21 @@ def main():
             check_chosen_files(parser)
             cosinus.main_selected_files(FILES, DIRECTORY)
 
-    elif command == "mcl":
+    elif command == "mcl-c":
         logging.info("MCL sur spectres.")
         markov_clustering_micans.clustering("cluster_molecules/resultats_cosinus_spectres", "cluster_molecules/resultats_clusters_mcl/spectre", "2.0")
         logging.info("MCL sur fingerprints.")
         markov_clustering_micans.clustering("cluster_molecules/resultats_fingerprints", "cluster_molecules/resultats_clusters_mcl/fingerprint", "2.0")
         logging.info("MCL sur groupes fonctionnels.")
         markov_clustering_micans.clustering("cluster_molecules/resultats_groupes-fonc", "cluster_molecules/resultats_clusters_mcl/groupefonct", "2.0")
+
+    elif command == "mcl":
+        logging.info("MCL sur spectres.")
+        markov_clustering_bibPython.clustering("cluster_molecules/resultats_cosinus_spectres", "cluster_molecules/resultats_clusters_mcl/spectre", 2.0, False)
+        logging.info("MCL sur fingerprints.")
+        markov_clustering_bibPython.clustering("cluster_molecules/resultats_fingerprints", "cluster_molecules/resultats_clusters_mcl/fingerprint", 2.0, False)
+        logging.info("MCL sur groupes fonctionnels.")
+        markov_clustering_bibPython.clustering("cluster_molecules/resultats_groupes-fonc", "cluster_molecules/resultats_clusters_mcl/groupefonct", 2.0, False)
 
     elif command == "intersection":
         if check_path(args):

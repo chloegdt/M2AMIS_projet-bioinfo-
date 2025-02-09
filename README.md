@@ -17,7 +17,8 @@ Le code est principalement écrit en Python et utilise diverses bibliothèques p
 * fingerprint.py : Génère des fingerprints de Morgan et calcule la similarité de Tanimoto.
 * functionnal_group.py : Identifie la présence de groupes fonctionnels et calcule la similarité de Tanimoto.
 * main.py : Gère l'éxecution des différents programmes.
-* markov_clustering_micans.py : Réalise le clustering des molécules en utilisant l'algorithme de Markov Clustering (MCL).
+* markov_clustering_micans.py : Réalise le clustering des molécules en utilisant l'algorithme de Markov Clustering (MCL) en utilisant l'implémentation de micans en ligne de commandes.
+* markov_clustering_bibPython.py : Réalise le clustering des molécules en utilisant l'algorithme de Markov Clustering (MCL) en utilisant un module python.
 * parse_data_final.py : Prétraitement des spectres des molécules d'un fichier mgf, pour pouvoir effectuer différentes analyses.
 * visualisation_clusters.py : Permet une visualisation (plot ou web) des molécules dans les clusters (sans prendre en compte les distances inter et intra cluster).
 * visualisation_mol_communes.py : Permet de visualiser l'intersection de 2 clustering en regardant les clusters ayant des molécules en communs.
@@ -51,7 +52,7 @@ L'attribut `<command>` peut prendre les valeurs suivantes:
 * `cosinus` : Calcule les matrices de similarités cosinus sur les spectres.
 * `fingerprint` : Calcule les matrices de similarités Tanimoto sur les fingerprints des SMILES.
 * `groupes` : Calcule les matrices de similarités Tanimoto sur les fingerprints des SMILES.
-* `mcl` : Fait le clustering de Markov Clustering sur les 3 types de similarités.
+* `mcl` : Fait le clustering de Markov Clustering sur les 3 types de similarités (en utilisant la version python).
 * `hdbscan` : Fait le clustering HDBSCAN sur les 3 types de similarités.
 * `ari` : Calcule la valeur ARI entre les différents résultats de clustering.
 * `nmi` : Calcule la valeur NMI entre les différents résultats de clustering.

@@ -195,7 +195,8 @@ def clustering_hdbscan(files, input_directory, output_directory, reduction=True)
         clustering = DensityClustering(file_path)
         clustering.load_data()
         labels = clustering.perform_clustering_hdbscan(min_samples=min_samples, metric=metric, reduction=reduction)
-        clustering.save_clusters_to_file(os.path.join(output_directory, os.path.basename(file_path)))
+        # clustering.save_clusters_to_file(os.path.join(output_directory, os.path.basename(file_path)))
+        clustering.save_clusters_to_file(os.path.join(output_directory, f"{os.path.basename(file_path).split('.')[0]}.txt"))
     logging.info(f"Clusters sauvegardés dans le dossier : {output_directory}\n")
 
 

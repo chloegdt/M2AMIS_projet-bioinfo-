@@ -1,10 +1,10 @@
 import os
 import logging
 import numpy as np
-import fingerprint as fg
 
 from rdkit import Chem
-from parse_data_final import create_dict_from_smiles
+from code.parse_data_final import create_dict_from_smiles
+from code import fingerprint as fg
 
 SAVE_DIRECTORY = "cluster_molecules/resultats_groupes-fonc/"
 

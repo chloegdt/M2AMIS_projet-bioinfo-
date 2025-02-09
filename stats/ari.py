@@ -2,10 +2,11 @@ import os
 from sklearn.metrics import adjusted_rand_score
 
 # À modifier selon les besoins 
-BASE_DIR = os.getcwd()
+# BASE_DIR = os.getcwd()
+BASE_DIR = "cluster_molecules"
 HDBSCAN_DIR = os.path.join(BASE_DIR, "resultats_clusters_hdbscan")
 MCL_DIR = os.path.join(BASE_DIR, "resultats_clusters_mcl")
-DATA_TYPES = ["spectre", "smiles", "groupefonct"]
+DATA_TYPES = ["spectre", "fingerprint", "groupefonct"]
 ENERGIES = ["10", "30", "50"]
 OUTPUT_FILE = "res_ari.txt"
 
@@ -56,10 +57,10 @@ def main():
     for data_type in data_types:
     # Comparaisons HDBSCAN vs HDBSCAN au sein du même type de données
         for energy in energies:
-            file_hdbscan1 = os.path.join(hdbscan_dir, data_type, f"{data_type}_{energy}.txt")
+            file_hdbscan1 = os.path.join(hdbscan_dir, data_type, f"energy_{energy}.txt")
             for data_type_2 in data_types:
                 if data_type == data_type_2:  # Comparaison HDBSCAN vs HDBSCAN dans le même type
-                    file_hdbscan2 = os.path.join(hdbscan_dir, data_type_2, f"{data_type_2}_{energy}.txt")
+                    file_hdbscan2 = os.path.join(hdbscan_dir, data_type_2, f"energy_{energy}.txt")
                     relative_hdbscan_path1 = os.path.relpath(file_hdbscan1, base_dir)
                     relative_hdbscan_path2 = os.path.relpath(file_hdbscan2, base_dir)
                     if os.path.exists(file_hdbscan1) and os.path.exists(file_hdbscan2):
@@ -72,10 +73,10 @@ def main():
 
     # Comparaisons MCL vs MCL au sein du même type de données
     for energy in energies:
-        file_mcl1 = os.path.join(mcl_dir, data_type, f"{data_type}_{energy}.txt")
+        file_mcl1 = os.path.join(mcl_dir, data_type, f"energy_{energy}.txt")
         for data_type_2 in data_types:
             if data_type == data_type_2:  # Comparaison MCL vs MCL dans le même type
-                file_mcl2 = os.path.join(mcl_dir, data_type_2, f"{data_type_2}_{energy}.txt")
+                file_mcl2 = os.path.join(mcl_dir, data_type_2, f"energy_{energy}.txt")
                 relative_mcl_path1 = os.path.relpath(file_mcl1, base_dir)
                 relative_mcl_path2 = os.path.relpath(file_mcl2, base_dir)
                 if os.path.exists(file_mcl1) and os.path.exists(file_mcl2):
@@ -91,8 +92,8 @@ def main():
         for data_type_1 in data_types:
             for data_type_2 in data_types:
                 if data_type_1 != data_type_2:  # Comparaison entre types différents
-                    file_hdbscan1 = os.path.join(hdbscan_dir, data_type_1, f"{data_type_1}_{energy}.txt")
-                    file_hdbscan2 = os.path.join(hdbscan_dir, data_type_2, f"{data_type_2}_{energy}.txt")
+                    file_hdbscan1 = os.path.join(hdbscan_dir, data_type_1, f"energy_{energy}.txt")
+                    file_hdbscan2 = os.path.join(hdbscan_dir, data_type_2, f"energy_{energy}.txt")
                     relative_hdbscan_path1 = os.path.relpath(file_hdbscan1, base_dir)
                     relative_hdbscan_path2 = os.path.relpath(file_hdbscan2, base_dir)
                     if os.path.exists(file_hdbscan1) and os.path.exists(file_hdbscan2):
@@ -108,8 +109,8 @@ def main():
         for data_type_1 in data_types:
             for data_type_2 in data_types:
                 if data_type_1 != data_type_2:  # Comparaison entre types différents
-                    file_mcl1 = os.path.join(mcl_dir, data_type_1, f"{data_type_1}_{energy}.txt")
-                    file_mcl2 = os.path.join(mcl_dir, data_type_2, f"{data_type_2}_{energy}.txt")
+                    file_mcl1 = os.path.join(mcl_dir, data_type_1, f"energy_{energy}.txt")
+                    file_mcl2 = os.path.join(mcl_dir, data_type_2, f"energy_{energy}.txt")
                     relative_mcl_path1 = os.path.relpath(file_mcl1, base_dir)
                     relative_mcl_path2 = os.path.relpath(file_mcl2, base_dir)
                     if os.path.exists(file_mcl1) and os.path.exists(file_mcl2):
@@ -123,8 +124,8 @@ def main():
     # Comparaisons HDBSCAN (même type) vs MCL (même type)
     for energy in energies:
         for data_type_1 in data_types:
-            file_hdbscan = os.path.join(hdbscan_dir, data_type_1, f"{data_type_1}_{energy}.txt")
-            file_mcl = os.path.join(mcl_dir, data_type_1, f"{data_type_1}_{energy}.txt")
+            file_hdbscan = os.path.join(hdbscan_dir, data_type_1, f"energy_{energy}.txt")
+            file_mcl = os.path.join(mcl_dir, data_type_1, f"energy_{energy}.txt")
             relative_hdbscan_path = os.path.relpath(file_hdbscan, base_dir)
             relative_mcl_path = os.path.relpath(file_mcl, base_dir)
             if os.path.exists(file_hdbscan) and os.path.exists(file_mcl):
@@ -140,8 +141,8 @@ def main():
         for data_type_1 in data_types:
             for data_type_2 in data_types:
                 if data_type_1 != data_type_2:  # Comparaison HDBSCAN (différents types) vs MCL (différents types)
-                    file_hdbscan = os.path.join(hdbscan_dir, data_type_1, f"{data_type_1}_{energy}.txt")
-                    file_mcl = os.path.join(mcl_dir, data_type_2, f"{data_type_2}_{energy}.txt")
+                    file_hdbscan = os.path.join(hdbscan_dir, data_type_1, f"energy_{energy}.txt")
+                    file_mcl = os.path.join(mcl_dir, data_type_2, f"energy_{energy}.txt")
                     relative_hdbscan_path = os.path.relpath(file_hdbscan, base_dir)
                     relative_mcl_path = os.path.relpath(file_mcl, base_dir)
                     if os.path.exists(file_hdbscan) and os.path.exists(file_mcl):

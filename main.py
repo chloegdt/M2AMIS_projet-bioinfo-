@@ -5,14 +5,16 @@ import argparse
 import pathlib
 from pathlib import Path
 
-import parse_data_final
-import cosinus
-import fingerprint
-import functionnal_group
-import dbscan_hdbscan
-import markov_clustering_micans
-from visualisation_clusters import plot_interactive_network
-from visualisation_mol_communes import find_common_clusters, load_clusters, net_common_clusters
+from code import parse_data_final
+from code import cosinus
+from code import fingerprint
+from code import functionnal_group
+from code import dbscan_hdbscan
+from code import markov_clustering_micans
+from code import markov_clustering_bibPython
+from code.visualisation_clusters import plot_interactive_network
+from code.visualisation_mol_communes import find_common_clusters, load_clusters, net_common_clusters
+from stats import ari, nmi
 
 FILES = [
     "energy_37.0_precursor_M+Na.mgf",
@@ -39,15 +41,18 @@ def get_parser():
                     "groupes        - Calcule la similarité Tanimoto des molécules à partir de leur fingerprints de Morgan.\n"
                     "fingerprint    - Calcule la similarité Tanimoto à partir d'une représentation par groupes foncitonnels.\n"
                     "hdbscan        - Applique le clustering HDBSCAN.\n"
-                    "mcl            - Applique le clustering Markov Clustering (MCL).\n"
+                    "mcl-c          - Applique le clustering Markov Clustering (MCL) à partir de la bibliothèque en C.\n"
+                    "mcl-py         - Applique le clustering Markov Clustering (MCL) à partir du module python.\n"
                     "intersection   - Permet de visualiser les clusters commun entre deux fichiers de cluster.\n"
-                    "cluster        - Permet de visualiser les cluster d'un fichier.\n",
+                    "cluster        - Permet de visualiser les cluster d'un fichier.\n"
+                    "ari            - Compare les résultats de clustering HDBSCAN et MCL en utilisant ARI (Adjusted Rand Index) pour tous les fichiers.\n"
+                    "nmi            - Compare les résultats de clustering HDBSCAN et MCL en utilisant NMI (Normalized Mutual Information) pour tous les fichiers.\n",
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument(
         "command",
         type=str,
-        choices=["parse", "cosinus", "groupes", "fingerprint", "hdbscan", "mcl", "intersection", "cluster"],
+        choices=["parse", "cosinus", "groupes", "fingerprint", "hdbscan", "mcl-py", "intersection", "cluster", "ari", "nmi", "mcl-c"],
         help="Les commandes à executé(ex : 'parse', 'cosinus', etc.)."
     )
     parser.add_argument(
@@ -86,9 +91,9 @@ def check_chosen_files(parser):
     @param parser: Objet ArgumentParser configuré dans get_parser().
     """
     count = 0
-    for file in FILES :
+    for file in FILES:
         file = "cluster_molecules/" + file 
-        if os.path.isfile(file) :
+        if os.path.isfile(file):
             count += 1
 
     if count == 0:
@@ -133,10 +138,10 @@ def main():
         sys.exit(0)
 
     command = args.command.lower()
-    if command == "parse" :
+    if command == "parse":
         check_files()
 
-    elif command == "cosinus" :
+    elif command == "cosinus":
         if args.path:
             print(f"Path provided: {args.path.resolve()}")
             directory_path = args.path
@@ -149,26 +154,37 @@ def main():
             check_chosen_files(parser)
             cosinus.main_selected_files(FILES, DIRECTORY)
 
-    elif command == "mcl" :
-        inputdir = "cluster_molecules/resultats_cosinus_spectres"
-        outputdir = "cluster_molecules/clusters_spectres_cosinus"
-        markov_clustering_micans.clustering(inputdir, outputdir, "2.0")
+    elif command == "mcl-c":
+        logging.info("MCL sur spectres.")
+        markov_clustering_micans.clustering("cluster_molecules/resultats_cosinus_spectres", "cluster_molecules/resultats_clusters_mcl/spectre", "2.0")
+        logging.info("MCL sur fingerprints.")
+        markov_clustering_micans.clustering("cluster_molecules/resultats_fingerprints", "cluster_molecules/resultats_clusters_mcl/fingerprint", "2.0")
+        logging.info("MCL sur groupes fonctionnels.")
+        markov_clustering_micans.clustering("cluster_molecules/resultats_groupes-fonc", "cluster_molecules/resultats_clusters_mcl/groupefonct", "2.0")
+
+    elif command == "mcl-py":
+        logging.info("MCL sur spectres.")
+        markov_clustering_bibPython.clustering("cluster_molecules/resultats_cosinus_spectres", "cluster_molecules/resultats_clusters_mcl/spectre", 2.0, False)
+        logging.info("MCL sur fingerprints.")
+        markov_clustering_bibPython.clustering("cluster_molecules/resultats_fingerprints", "cluster_molecules/resultats_clusters_mcl/fingerprint", 2.0, False)
+        logging.info("MCL sur groupes fonctionnels.")
+        markov_clustering_bibPython.clustering("cluster_molecules/resultats_groupes-fonc", "cluster_molecules/resultats_clusters_mcl/groupefonct", 2.0, False)
 
     elif command == "intersection":
-        if check_path(args) :
+        if check_path(args):
             smiles_clusters = load_clusters(args.path)
             spectrum_clusters = load_clusters(args.path)
 
             common_clusters = find_common_clusters(smiles_clusters, spectrum_clusters)
 
             net_common_clusters(common_clusters)
-        else :
+        else:
             logging.error("Fichier demandé : .txt de deux clusters")
 
     elif command == "cluster":
-        if check_path(args) :
+        if check_path(args):
             plot_interactive_network(args.path)
-        else :
+        else:
             logging.error("Fichier demandé : .txt de cluster")
             logging.error("Exemple : cluster_molecules/HDBSCAN_cosinus_spectre/energy_37.0_precursor_M+Na.txt")
 
@@ -183,11 +199,19 @@ def main():
     elif command == "hdbscan":
         check_chosen_files(parser)
         logging.info("HDBSCAN sur spectres.")
-        dbscan_hdbscan.clustering_hdbscan(FILES, "cluster_molecules/resultats_cosinus_spectres/", "cluster_molecules/HDBSCAN_cosinus_spectre/", True)
+        dbscan_hdbscan.clustering_hdbscan(FILES, "cluster_molecules/resultats_cosinus_spectres/", "cluster_molecules/resultats_clusters_hdbscan/spectre/", True)
         logging.info("HDBSCAN sur fingerprints.")
-        dbscan_hdbscan.clustering_hdbscan(FILES, "cluster_molecules/resultats_fingerprints/", "cluster_molecules/HDBSCAN_fingerprints_smiles/", True)
+        dbscan_hdbscan.clustering_hdbscan(FILES, "cluster_molecules/resultats_fingerprints/", "cluster_molecules/resultats_clusters_hdbscan/fingerprint/", True)
         logging.info("HDBSCAN sur groupes fonctionnels.")
-        dbscan_hdbscan.clustering_hdbscan(FILES, "cluster_molecules/resultats_groupes-fonc/", "cluster_molecules/HDBSCAN_groupes_smiles/", False)
+        dbscan_hdbscan.clustering_hdbscan(FILES, "cluster_molecules/resultats_groupes-fonc/", "cluster_molecules/resultats_clusters_hdbscan/groupefonct/", False)
+
+    elif command == "ari":
+        logging.info("Début du calcul des statistiques ARI.")
+        ari.main()
+
+    elif command == "nmi":
+        logging.info("Début du calcul des statistiques NMI.")
+        nmi.main()
 
     else:
         parser.error(f"Commande inconnu: {command}. Utilisez 'help' pour voir les options disponibles.")

@@ -25,12 +25,16 @@ def clustering(inputdir, outputdir, inflation):
     @param influation: when increasing, the max distance between two elements of a cluster is smaller
     """
     if not os.path.exists(outputdir):
-        os.mkdir(outputdir)
+        os.makedirs(outputdir, exist_ok=True)
     
     clear_directory(outputdir)
 
     for file in os.listdir(inputdir):
-        commande = ["mcl", os.path.join(inputdir, file), "--abc", "-I", inflation, "-odir", outputdir]
+        if file.startswith('.'):
+            continue
+        output_file = os.path.join(outputdir, f"{os.path.basename(file).split('.')[0]}.txt")
+        commande = ["mcl", os.path.join(inputdir, file), "--abc", "-I", inflation, "-o", output_file]
+        # commande = ["mcl", os.path.join(inputdir, file), "--abc", "-I", inflation, "-odir", outputdir]
         resulta  = subprocess.run(commande)
 
 if __name__ == "__main__":
